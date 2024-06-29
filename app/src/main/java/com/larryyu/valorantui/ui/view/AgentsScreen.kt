@@ -1,5 +1,8 @@
 package com.larryyu.valorantui.ui.view
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -53,8 +56,13 @@ import ir.kaaveh.sdpcompose.sdp
 import ir.kaaveh.sdpcompose.ssp
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun AgentScreen(agents: List<AgentItem>, onItemClick: (String) -> Unit) {
+fun AgentScreen(
+    agents: List<AgentItem>,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope, onItemClick: (String) -> Unit
+) {
     Scaffold(
         topBar = {
             SubcomposeAsyncImage(
@@ -103,7 +111,8 @@ fun AgentScreen(agents: List<AgentItem>, onItemClick: (String) -> Unit) {
         ) {
             LazyVerticalGrid(columns = GridCells.Fixed(2)) {
                 items(agents.reversed()) { agent ->
-                    AgentCard(agent = agent, onItemClick = onItemClick)
+                        AgentCard(agent = agent, animatedContentScope, sharedTransitionScope, onItemClick = onItemClick)
+
                 }
             }
         }
@@ -111,9 +120,12 @@ fun AgentScreen(agents: List<AgentItem>, onItemClick: (String) -> Unit) {
 }
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentCard(
     agent: AgentItem,
+    animatedContentScope : AnimatedContentScope ,
+    sharedTransitionScope: SharedTransitionScope ,
     viewModel: AgentsViewModel = hiltViewModel(),
     onItemClick: (String) -> Unit
 ) {
@@ -166,33 +178,38 @@ fun AgentCard(
                 .height(140.sdp)
                 .width(130.sdp),
         )
-
-
-        SubcomposeAsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(agent.fullPortrait)
-                .size(Size.ORIGINAL)
-                .build(),
-            contentDescription = null,
-            onSuccess = { success ->
-                viewModel.calcDomaintColor(success.result.drawable) { color ->
-                    dominantColor = color
-                }
-            },
-            loading = {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(30.dp),
-                        color = Color.White
+        with(sharedTransitionScope){
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(agent.fullPortrait)
+                    .size(Size.ORIGINAL)
+                    .build(),
+                contentDescription = null,
+                onSuccess = { success ->
+                    viewModel.calcDomaintColor(success.result.drawable) { color ->
+                        dominantColor = color
+                    }
+                },
+                loading = {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(30.dp),
+                            color = Color.White
+                        )
+                    }
+                },
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .sharedElement(
+                        state = rememberSharedContentState(key = agent.uuid ?: ""),
+                        animatedVisibilityScope  = animatedContentScope
                     )
-                }
-            },
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .height(190.sdp)
-                .scale(scale)
-                .align(Alignment.BottomCenter)
-        )
+                    .height(190.sdp)
+                    .scale(scale)
+                    .align(Alignment.BottomCenter)
+            )
+        }
+
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp, bottomStart = 50.dp))

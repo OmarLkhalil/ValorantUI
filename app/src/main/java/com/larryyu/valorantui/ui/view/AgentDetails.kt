@@ -1,10 +1,8 @@
 package com.larryyu.valorantui.ui.view
 
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.rememberModalBottomSheetState
-import android.util.Log
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -12,6 +10,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,14 +28,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,11 +50,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
@@ -64,18 +70,24 @@ import com.larryyu.valorantui.ui.viewmodel.AgentsViewModel
 import ir.kaaveh.sdpcompose.sdp
 import ir.kaaveh.sdpcompose.ssp
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun AgentDetailsScreen(agentId: String) {
-    Log.d("AgentDetailsScreen", "agentId: $agentId")
+fun AgentDetailsScreen(
+    agentId: String,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
+) {
+
     val viewModel: AgentDetailsViewModel = hiltViewModel()
-    viewModel.dispatch(AgentDetailsIntent.FetchAgentDetails(agentId), agentId)
+    LaunchedEffect(Unit) {
+        viewModel.dispatch(AgentDetailsIntent.FetchAgentDetails(agentId), agentId)
+    }
     var dominantColor by remember { mutableStateOf(Color.Gray) }
     val status by viewModel.state.collectAsState()
-    val sheetState: SheetState = rememberModalBottomSheetState(
-
-    )
+    val sheetState: SheetState = rememberModalBottomSheetState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -103,7 +115,7 @@ fun AgentDetailsScreen(agentId: String) {
                 .fillMaxSize()
                 .padding(it)
         ) {
-            AgentDetailsCard(agent = status.agentDetails, sheetState) {
+            AgentDetailsCard(agent = status.agentDetails, animatedContentScope, sharedTransitionScope, sheetState) {
                 dominantColor = it
             }
         }
@@ -111,14 +123,19 @@ fun AgentDetailsScreen(agentId: String) {
 }
 
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentDetailsCard(
     agent: Data,
+    animatedContentScope: AnimatedContentScope,
+    sharedTransitionScope: SharedTransitionScope,
     sheetState: SheetState,
     viewModel: AgentsViewModel = hiltViewModel(),
     onDominant: (Color) -> Unit
 ) {
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+
     var dominantColor by remember { mutableStateOf(Color.Gray) }
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val scale by infiniteTransition.animateFloat(
@@ -139,16 +156,10 @@ fun AgentDetailsCard(
     ) {
         SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(agent.fullPortrait)
+                .data(agent.background)
                 .size(Size.ORIGINAL)
                 .build(),
             contentDescription = null,
-            onSuccess = { success ->
-                viewModel.calcDomaintColor(success.result.drawable) { color ->
-                    dominantColor = color
-                    onDominant(dominantColor)
-                }
-            },
             loading = {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
@@ -159,11 +170,53 @@ fun AgentDetailsCard(
             },
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 400.dp)
-                .scale(scale)
-                .align(Alignment.BottomCenter)
+                .height(400.dp)
+                .padding(top = 50.dp)
+                .align(Alignment.TopCenter)
         )
+
+        with(sharedTransitionScope){
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(agent.fullPortrait)
+                    .size(Size.ORIGINAL)
+                    .build(),
+                contentDescription = null,
+                onSuccess = { success ->
+                    viewModel.calcDomaintColor(success.result.drawable) { color ->
+                        dominantColor = color
+                        onDominant(dominantColor)
+                    }
+                },
+                loading = {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(30.dp),
+                            color = Color.White
+                        )
+                    }
+                },
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                    .fillMaxSize()
+                    .sharedElement(
+                        state = rememberSharedContentState(key = agent.uuid ?: ""),
+                        animatedVisibilityScope  = animatedContentScope
+                    )
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            offsetX += dragAmount.x
+                            offsetY += dragAmount.y
+                        }
+                    }
+                    .padding(bottom = 400.dp)
+                    .scale(scale)
+                    .align(Alignment.BottomCenter)
+            )
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
