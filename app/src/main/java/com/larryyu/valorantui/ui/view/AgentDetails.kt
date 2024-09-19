@@ -63,7 +63,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
 import com.larryyu.valorantui.R
-import com.larryyu.valorantui.domain.model.Data
+import com.larryyu.valorantui.domain.model.AgentDetailsData
 import com.larryyu.valorantui.ui.intent.AgentDetailsIntent
 import com.larryyu.valorantui.ui.viewmodel.AgentDetailsViewModel
 import com.larryyu.valorantui.ui.viewmodel.AgentsViewModel
@@ -126,7 +126,7 @@ fun AgentDetailsScreen(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentDetailsCard(
-    agent: Data,
+    agent: AgentDetailsData,
     animatedContentScope: AnimatedContentScope,
     sharedTransitionScope: SharedTransitionScope,
     sheetState: SheetState,
@@ -283,7 +283,7 @@ fun AgentDetailsCard(
 }
 
 @Composable
-fun AgentInfoDetails(agent: Data, modifier: Modifier) {
+fun AgentInfoDetails(agent: AgentDetailsData, modifier: Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()

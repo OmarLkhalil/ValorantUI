@@ -3,7 +3,7 @@ package com.larryyu.valorantui.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.larryyu.valorantui.domain.model.Data
+import com.larryyu.valorantui.domain.model.AgentDetailsData
 import com.larryyu.valorantui.domain.usecase.AgentDetailsUseCase
 import com.larryyu.valorantui.domain.utils.DataState
 import com.larryyu.valorantui.ui.intent.AgentDetailsIntent
@@ -44,7 +44,7 @@ class AgentDetailsViewModel @Inject constructor(
             _state.value = when (dataState) {
                 is DataState.Success -> {
                     Log.d("AgentDetailsViewModel", "fetchDetails: ${dataState.data}")
-                    AgentDetailsState(agentDetails = dataState.data.data ?: Data())
+                    AgentDetailsState(agentDetails = dataState.data.data ?: AgentDetailsData())
                 }
 
                 is DataState.Error -> {

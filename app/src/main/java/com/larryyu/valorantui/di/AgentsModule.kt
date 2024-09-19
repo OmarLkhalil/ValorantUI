@@ -17,7 +17,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+object AgentsModule {
 
     @Provides
     @Singleton
@@ -36,11 +36,13 @@ object AppModule {
     fun provideAgentsReducer(): AgentsReducer {
         return AgentsReducer()
     }
+
     @Provides
     @Singleton
     fun provideAgentDetailsReducer(): AgentDetailsReducer {
         return AgentDetailsReducer()
     }
+
     @Provides
     @Singleton
     fun provideAgentsUseCase(agentsRepo: AgentsRepo) = AgentsUseCase(agentsRepo)

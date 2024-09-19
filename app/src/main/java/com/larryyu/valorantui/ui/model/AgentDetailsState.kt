@@ -1,9 +1,10 @@
 package com.larryyu.valorantui.ui.model
 
-import com.larryyu.valorantui.domain.model.Data
+import com.larryyu.valorantui.domain.model.AgentDetailsData
+
 
 data class AgentDetailsState(
-    val agentDetails : Data = Data(),
+    val agentDetails : AgentDetailsData = AgentDetailsData(),
     val error: String = "",
     val isLoading: Boolean = false
 ): State

@@ -4,6 +4,7 @@ import com.larryyu.valorantui.ui.intent.AgentDetailsIntent
 import com.larryyu.valorantui.ui.intent.AgentsIntent
 import javax.inject.Inject
 
+
 interface Reducer<S : State, A : AgentsIntent> {
     fun reduce(currentState: S, action: A): S
 }

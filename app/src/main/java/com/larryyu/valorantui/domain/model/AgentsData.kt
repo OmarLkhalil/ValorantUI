@@ -1,18 +1,10 @@
 package com.larryyu.valorantui.domain.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Json
 
-
-@JsonClass(generateAdapter = true)
-data class AgentsData(
-
-	@Json(name="data")
-	val data: List<AgentItem>? = null,
-
-	@Json(name="status")
-	val status: Int? = null
-)
 
 
 @JsonClass(generateAdapter = true)
@@ -40,8 +32,9 @@ data class RecruitmentData(
 	val startDate: String? = null
 )
 
+@Entity(tableName = "agents")
 @JsonClass(generateAdapter = true)
-data class AgentItem(
+data class AgentsData(
 
 	@Json(name="killfeedPortrait")
 	val killfeedPortrait: String? = null,
@@ -67,6 +60,7 @@ data class AgentItem(
 	@Json(name="isAvailableForTest")
 	val isAvailableForTest: Boolean? = null,
 
+	@PrimaryKey
 	@Json(name="uuid")
 	val uuid: String? = null,
 

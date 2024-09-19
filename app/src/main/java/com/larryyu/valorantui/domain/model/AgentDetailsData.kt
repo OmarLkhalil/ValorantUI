@@ -4,20 +4,10 @@ import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Json
 
 
+
+
 @JsonClass(generateAdapter = true)
 data class AgentDetailsData(
-
-	@Json(name="data")
-	val data: Data? = null,
-
-	@Json(name="status")
-	val status: Int? = null
-)
-
-
-
-@JsonClass(generateAdapter = true)
-data class Data(
 	@Json(name = "killfeedPortrait")
 	val killfeedPortrait: String? = null,
 

@@ -57,7 +57,7 @@ class AgentsViewModel @Inject constructor(
         agentsUseCase().collectLatest { dataState ->
             _state.value = when (dataState) {
                 is DataState.Success -> {
-                    Log.d("AgentsViewModel", "fetchAgents: ${dataState.data.data}")
+                    Log.d("AgentsViewModel", "fetchAgents: ${dataState.data}")
                     _state.value.copy(
                         agents = dataState.data.data ?: emptyList(),
                         isLoading = false

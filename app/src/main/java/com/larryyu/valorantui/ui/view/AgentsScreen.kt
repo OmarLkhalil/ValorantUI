@@ -43,14 +43,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
 import com.larryyu.valorantui.R
-import com.larryyu.valorantui.domain.model.AgentItem
+import com.larryyu.valorantui.domain.model.AgentsData
 import com.larryyu.valorantui.ui.viewmodel.AgentsViewModel
 import ir.kaaveh.sdpcompose.sdp
 import ir.kaaveh.sdpcompose.ssp
@@ -59,10 +58,11 @@ import ir.kaaveh.sdpcompose.ssp
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentScreen(
-    agents: List<AgentItem>,
+    agents: List<AgentsData>,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope, onItemClick: (String) -> Unit
 ) {
+
     Scaffold(
         topBar = {
             SubcomposeAsyncImage(
@@ -77,29 +77,7 @@ fun AgentScreen(
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(35.sdp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(80.sdp)
-                        .background(Color.White)
-                        .height(2.sdp)
-                )
-                Text(
-                    text = "Agents",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.sdp),
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    fontFamily = FontFamily(Font(R.font.dryme)),
-                    fontSize = 18.ssp
-                )
-            }
+
         },
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Black.copy(0.9f)
@@ -112,7 +90,6 @@ fun AgentScreen(
             LazyVerticalGrid(columns = GridCells.Fixed(2)) {
                 items(agents.reversed()) { agent ->
                         AgentCard(agent = agent, animatedContentScope, sharedTransitionScope, onItemClick = onItemClick)
-
                 }
             }
         }
@@ -123,7 +100,7 @@ fun AgentScreen(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentCard(
-    agent: AgentItem,
+    agent: AgentsData,
     animatedContentScope : AnimatedContentScope ,
     sharedTransitionScope: SharedTransitionScope ,
     viewModel: AgentsViewModel = hiltViewModel(),
@@ -231,7 +208,7 @@ fun AgentCard(
 }
 
 @Composable
-fun AgentInfo(agent: AgentItem, modifier: Modifier) {
+fun AgentInfo(agent: AgentsData, modifier: Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -245,6 +222,4 @@ fun AgentInfo(agent: AgentItem, modifier: Modifier) {
         Text(text = agent.role?.displayName ?: "", color = Color.White)
     }
 }
-
-
 
