@@ -1,17 +1,15 @@
-package com.larryyu.ui.viewmodel
+package com.larryyu.presentation.viewmodel
 
-import androidx.compose.ui.graphics.Color
 import com.larryyu.domain.repository.AgentsRepo
 import com.larryyu.domain.utils.DataState
-import com.larryyu.ui.contract.AgentsIntent
-import com.larryyu.ui.contract.AgentsUIState
+import com.larryyu.presentation.uistates.AgentsIntent
+import com.larryyu.presentation.uistates.AgentsUIState
 import com.larryyu.ui.extensions.EventFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent

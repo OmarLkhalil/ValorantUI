@@ -1,9 +1,9 @@
-package com.larryyu.ui.viewmodel
+package com.larryyu.presentation.viewmodel
 
 import com.larryyu.domain.usecase.GetAllBundlesUseCase
 import com.larryyu.domain.usecase.GetAllGunsUseCase
-import com.larryyu.ui.contract.GunsIntent
-import com.larryyu.ui.model.GunsState
+import com.larryyu.presentation.uistates.GunsIntent
+import com.larryyu.presentation.uistates.GunsState
 
 
 class GunsViewModel(

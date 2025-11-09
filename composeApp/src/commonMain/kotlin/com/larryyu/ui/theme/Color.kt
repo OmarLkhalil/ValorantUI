@@ -1,4 +1,4 @@
-package com.larryyu.composeapp.ui.theme
+package com.larryyu.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

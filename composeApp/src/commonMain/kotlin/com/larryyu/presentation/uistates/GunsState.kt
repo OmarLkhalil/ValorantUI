@@ -1,8 +1,8 @@
-package com.larryyu.ui.model
+package com.larryyu.presentation.uistates
 
 import com.larryyu.domain.model.BundlesData
 import com.larryyu.domain.model.GunsData
-import com.larryyu.ui.viewmodel.UiState
+import com.larryyu.presentation.viewmodel.UiState
 
 
 data class GunsState(

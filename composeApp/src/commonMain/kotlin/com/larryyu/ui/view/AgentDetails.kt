@@ -1,6 +1,5 @@
 package com.larryyu.ui.view
 
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -26,20 +25,18 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import com.larryyu.domain.model.AgentDetailsData
-import com.larryyu.ui.contract.AgentDetailsIntent
-import com.larryyu.ui.viewmodel.AgentDetailsViewModel
-import com.larryyu.ui.viewmodel.AgentsViewModel
+import com.larryyu.presentation.uistates.AgentDetailsIntent
+import com.larryyu.presentation.viewmodel.AgentDetailsViewModel
+import com.larryyu.presentation.viewmodel.AgentsViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
 import org.koin.compose.koinInject
 import valorantui.composeapp.generated.resources.Res
 import valorantui.composeapp.generated.resources.dryme
-import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)

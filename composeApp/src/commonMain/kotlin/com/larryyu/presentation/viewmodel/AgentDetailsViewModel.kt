@@ -1,10 +1,9 @@
-package com.larryyu.ui.viewmodel
+package com.larryyu.presentation.viewmodel
 
 import com.larryyu.domain.model.AgentDetailsData
 import com.larryyu.domain.usecase.AgentDetailsUseCase
-import com.larryyu.ui.contract.AgentDetailsIntent
-import com.larryyu.ui.model.AgentDetailsState
-import com.larryyu.ui.viewmodel.BaseViewModel
+import com.larryyu.presentation.uistates.AgentDetailsIntent
+import com.larryyu.presentation.uistates.AgentDetailsState
 
 
 class AgentDetailsViewModel(

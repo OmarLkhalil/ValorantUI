@@ -9,13 +9,6 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.larryyu.composeapp.ui.theme.Pink40
-import com.larryyu.composeapp.ui.theme.Pink80
-import com.larryyu.composeapp.ui.theme.Purple40
-import com.larryyu.composeapp.ui.theme.Purple80
-import com.larryyu.composeapp.ui.theme.PurpleGrey40
-import com.larryyu.composeapp.ui.theme.PurpleGrey80
-import com.larryyu.composeapp.ui.theme.Typography
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,

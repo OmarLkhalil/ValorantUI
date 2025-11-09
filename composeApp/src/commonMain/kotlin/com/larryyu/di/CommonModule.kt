@@ -9,10 +9,9 @@ import com.larryyu.domain.repository.AgentsRepo
 import com.larryyu.domain.usecase.AgentDetailsUseCase
 import com.larryyu.domain.usecase.AgentsUseCase
 import com.larryyu.domain.usecase.AgentsUseCaseImpl
-import com.larryyu.ui.viewmodel.AgentsViewModel
-import com.larryyu.ui.viewmodel.AgentDetailsViewModel
-import com.larryyu.ui.viewmodel.GunsViewModel
-import io.ktor.client.HttpClient
+import com.larryyu.presentation.viewmodel.AgentsViewModel
+import com.larryyu.presentation.viewmodel.AgentDetailsViewModel
+import com.larryyu.presentation.viewmodel.GunsViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module

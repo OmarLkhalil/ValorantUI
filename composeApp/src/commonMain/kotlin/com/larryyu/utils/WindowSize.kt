@@ -1,4 +1,4 @@
-package com.larryyu.ui.contract
+package com.larryyu.utils
 
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.runtime.Composable

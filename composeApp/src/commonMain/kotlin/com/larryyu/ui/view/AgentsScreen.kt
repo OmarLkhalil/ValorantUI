@@ -1,7 +1,6 @@
 package com.larryyu.ui.view
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -33,13 +32,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.larryyu.domain.model.AgentsModel
-import com.larryyu.ui.contract.AgentsIntent
-import com.larryyu.ui.contract.AgentsUIState
-import com.larryyu.ui.viewmodel.AgentsViewModel
-import kotlinx.coroutines.flow.collectLatest
+import com.larryyu.presentation.uistates.AgentsIntent
+import com.larryyu.presentation.uistates.AgentsUIState
+import com.larryyu.presentation.viewmodel.AgentsViewModel
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.Font
 import org.koin.compose.koinInject
@@ -68,7 +65,6 @@ fun AgentScreen(
         ) { targetAgent ->
 
             if (targetAgent == null) {
-                // الشاشة الأساسية
                 AgentsGridScreen(
                     agentsState = agentsState,
                     sharedTransitionScope = this@SharedTransitionLayout,
@@ -76,7 +72,6 @@ fun AgentScreen(
                     onAgentClick = { selectedAgent.value = it }
                 )
             } else {
-                // شاشة التفاصيل
                 AgentDetailsScreen(
                     agentId = targetAgent.uuid,
                     sharedTransitionScope = this@SharedTransitionLayout,
@@ -122,7 +117,7 @@ fun AgentsGridScreen(
                 )
 
                 agentsState.error != null -> Text(
-                    text = agentsState.error ?: "Unknown error",
+                    text = agentsState.error,
                     color = Color.Red,
                     modifier = Modifier.align(Alignment.Center)
                 )

@@ -1,8 +1,7 @@
-package com.larryyu.ui.model
+package com.larryyu.presentation.uistates
 
 import com.larryyu.domain.model.AgentDetailsData
-import com.larryyu.domain.model.AgentsModel
-import com.larryyu.ui.viewmodel.UiState
+import com.larryyu.presentation.viewmodel.UiState
 
 
 data class AgentDetailsState(

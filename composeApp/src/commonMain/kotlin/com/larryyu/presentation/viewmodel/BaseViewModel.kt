@@ -1,4 +1,4 @@
-package com.larryyu.ui.viewmodel
+package com.larryyu.presentation.viewmodel
 
 import com.larryyu.domain.utils.DataState
 import kotlinx.coroutines.CoroutineScope

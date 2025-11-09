@@ -1,4 +1,4 @@
-package com.larryyu.ui.contract
+package com.larryyu.presentation.uistates
 
 import com.larryyu.domain.model.AgentsModel
 
