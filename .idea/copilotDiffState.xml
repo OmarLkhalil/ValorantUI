@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/larryyu/valorantui/di/NetworkModule.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/larryyu/valorantui/di/NetworkModule.kt" />
+              <option name="originalContent" value="package com.larryyu.valorantui.di&#10;&#10;import android.os.Build&#10;import androidx.annotation.RequiresApi&#10;import com.larryyu.valorantui.domain.utils.RetrofitConstants&#10;import io.ktor.client.HttpClient&#10;import io.ktor.client.engine.okhttp.OkHttp&#10;import io.ktor.client.plugins.contentnegotiation.ContentNegotiation&#10;import io.ktor.serialization.kotlinx.json.json&#10;import kotlinx.serialization.json.Json&#10;import java.time.Duration&#10;&#10;@RequiresApi(Build.VERSION_CODES.O)&#10;object NetworkModule {&#10;&#10;    fun provideKtorClient(): HttpClient {&#10;        return HttpClient(OkHttp) {&#10;            install(ContentNegotiation) {&#10;                json(Json {&#10;                    ignoreUnknownKeys = true&#10;                    prettyPrint = true&#10;                    isLenient = true&#10;                })&#10;            }&#10;            engine {&#10;                config {&#10;                    connectTimeout(Duration.ofSeconds(RetrofitConstants.TIME_OUT.toLong()))&#10;                    readTimeout(Duration.ofSeconds(RetrofitConstants.TIME_OUT.toLong()))&#10;                    writeTimeout(Duration.ofSeconds(RetrofitConstants.TIME_OUT.toLong()))&#10;                }&#10;            }&#10;        }&#10;    }&#10;}&#10;" />
+              <option name="updatedContent" value="package com.larryyu.valorantui.di&#13;&#10;&#13;&#10;import android.os.Build&#13;&#10;import androidx.annotation.RequiresApi&#13;&#10;import com.larryyu.valorantui.domain.utils.RetrofitConstants&#13;&#10;import io.ktor.client.HttpClient&#13;&#10;import io.ktor.client.engine.okhttp.OkHttp&#13;&#10;import io.ktor.client.plugins.contentnegotiation.ContentNegotiation&#13;&#10;import io.ktor.serialization.kotlinx.json.json&#13;&#10;import kotlinx.serialization.json.Json&#13;&#10;import java.time.Duration&#13;&#10;&#13;&#10;@RequiresApi(Build.VERSION_CODES.O)&#13;&#10;object NetworkModule {&#13;&#10;&#13;&#10;    fun provideKtorClient(): HttpClient {&#13;&#10;        return HttpClient(OkHttp) {&#13;&#10;            install(ContentNegotiation) {&#13;&#10;                json(Json {&#13;&#10;                    ignoreUnknownKeys = true&#13;&#10;                    prettyPrint = true&#13;&#10;                    isLenient = true&#13;&#10;                })&#13;&#10;            }&#13;&#10;            engine {&#13;&#10;                config {&#13;&#10;                    connectTimeout(Duration.ofSeconds(RetrofitConstants.TIME_OUT.toLong()))&#13;&#10;                    readTimeout(Duration.ofSeconds(RetrofitConstants.TIME_OUT.toLong()))&#13;&#10;                    writeTimeout(Duration.ofSeconds(RetrofitConstants.TIME_OUT.toLong()))&#13;&#10;                }&#13;&#10;            }&#13;&#10;        }&#13;&#10;    }&#13;&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
