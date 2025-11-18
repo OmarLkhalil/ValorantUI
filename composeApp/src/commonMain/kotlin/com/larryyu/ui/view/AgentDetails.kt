@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,17 +23,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,10 +42,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.larryyu.domain.model.AbilitiesItemDetails
 import com.larryyu.domain.model.AgentDetailsData
 import com.larryyu.presentation.uistates.AgentDetailsIntent
@@ -55,7 +50,9 @@ import com.larryyu.presentation.viewmodel.AgentDetailsViewModel
 import com.larryyu.ui.components.CoilImage
 import com.larryyu.ui.components.DescriptionText
 import com.larryyu.ui.components.HeaderText
+import com.larryyu.ui.components.calculateDominantColor
 import com.larryyu.ui.theme.Theme
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.compose.koinInject
 
 
@@ -74,8 +71,17 @@ fun AgentDetailsScreen(
     }
 
     val surfaceColor = Theme.colors.surface
-    val status by viewModel.state.collectAsState()
+    val status by viewModel.state.collectAsStateWithLifecycle()
     var dominantColor by remember { mutableStateOf(surfaceColor) }
+
+    LaunchedEffect(status.agentDetails.fullPortrait) {
+        calculateDominantColor(
+            source = status.agentDetails.fullPortrait.orEmpty(),
+        ) { color ->
+            dominantColor = color
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize().background(dominantColor),
         topBar = {
@@ -93,20 +99,6 @@ fun AgentDetailsScreen(
         containerColor = dominantColor.copy(alpha = 0.9f)
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(it)) {
-
-            LaunchedEffect(status.agentDetails) {
-                val source = status.agentDetails.fullPortrait.orEmpty()
-                val bytes = source.encodeToByteArray()
-                val sums = IntArray(3)
-                for (i in bytes.indices) {
-                    sums[i % 3] = (sums[i % 3] + (bytes[i].toInt() and 0xFF)) % 256
-                }
-                val r = sums[0] / 255f
-                val g = sums[1] / 255f
-                val b = sums[2] / 255f
-                dominantColor = Color(r, g, b)
-            }
-
             AgentDetailsCardComponent(
                 agent = status.agentDetails,
                 dominantColor = dominantColor,
@@ -118,28 +110,32 @@ fun AgentDetailsScreen(
 }
 
 @Composable
-fun AgentInfoDetailsComponent(agent: AgentDetailsData, modifier: Modifier = Modifier) {
-    Column(
+fun AgentInfoDetailsComponent(
+    agent: AgentDetailsData,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
         modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(5.dp)
             .fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentPadding = PaddingValues(Theme.dimens.space16),
+        verticalArrangement = Arrangement.spacedBy(Theme.dimens.space16)
     ) {
-        Spacer(modifier = Modifier.height(10.dp))
-        AgentRoleRow(agent = agent)
-        Spacer(modifier = Modifier.height(30.dp))
-        AgentAbilitiesRow(agent = agent)
-        Spacer(modifier = Modifier.height(10.dp))
-        DescriptionText(
-            agent = agent,
-            contentDescription = "Agent Description for ${agent.displayName}, it's Description is ${agent.description}"
-        )
+        item {
+            AgentRoleRow(agent = agent)
+        }
+
+        item {
+            AgentAbilitiesRow(agent = agent)
+        }
+
+        item {
+            DescriptionText(
+                text = agent.description.orEmpty(),
+                contentDescription = "Agent Description for ${agent.displayName}, it's Description is ${agent.description}"
+            )
+        }
     }
 }
-
 
 @Composable
 fun AbilityItem(ability: AbilitiesItemDetails) {
@@ -152,11 +148,11 @@ fun AbilityItem(ability: AbilitiesItemDetails) {
             contentDescription = "It's the ability Icon for ${ability.displayName}",
             modifier = Modifier.size(50.dp)
         )
-        Text(
+        HeaderText(
             text = ability.displayName ?: "",
-            color = Theme.colors.textPrimary,
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center
+            contentDescription = "It's the ability Name for ${ability.displayName}",
+            modifier = Modifier,
+            textStyle = Theme.typography.body12
         )
     }
 }
@@ -170,11 +166,10 @@ fun AgentRoleRow(agent: AgentDetailsData) {
             modifier = Modifier.size(30.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
-        Text(
+        DescriptionText(
             text = agent.role?.displayName ?: "",
-            color = Theme.colors.textPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            contentDescription = "It's the Agent Role Name for ${agent.role?.displayName}",
+            textStyle = Theme.typography.body16
         )
     }
 }

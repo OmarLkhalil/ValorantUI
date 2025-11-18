@@ -16,7 +16,7 @@ import com.larryyu.ui.theme.Theme
 
 @Composable
 fun CoilImage(
-    url: String?,
+    url: Any?,
     contentDescription: String,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,

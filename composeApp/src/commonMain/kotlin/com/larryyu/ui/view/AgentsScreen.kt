@@ -5,7 +5,15 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -13,7 +21,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -22,7 +38,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,10 +61,11 @@ import com.larryyu.domain.model.AgentsModel
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
 import com.larryyu.presentation.viewmodel.AgentsViewModel
+import com.larryyu.ui.components.CoilImage
 import com.larryyu.ui.components.ThemeWipeOverlay
+import com.larryyu.ui.components.calculateDominantColor
 import com.larryyu.ui.theme.Theme
 import com.larryyu.ui.theme.ThemeViewModel
-import com.larryyu.ui.theme.ValorantUIColors
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.Font
@@ -55,9 +79,9 @@ import valorantui.composeapp.generated.resources.valorant
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun AgentScreen(
+fun AgentsScreen(
     viewModel: AgentsViewModel = koinInject(),
-    onDetailsClick: (String) -> Unit
+    // onDetailsClick: (String) -> Unit // Removed as internal navigation is handled by selectedAgent state
 ) {
     val agentsState by viewModel.agentsState.collectAsStateWithLifecycle()
     val selectedAgent = remember { mutableStateOf<AgentsModel?>(null) }
@@ -73,7 +97,8 @@ fun AgentScreen(
             label = "agentsTransition"
         ) { targetAgent ->
             if (targetAgent == null) {
-                AgentsGridScreen(
+                // State-hoisting component for the grid
+                AgentsGridRoute(
                     agentsState = agentsState,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this,
@@ -91,41 +116,9 @@ fun AgentScreen(
     }
 }
 
-@Composable
-fun AgentsTopBar(
-    onAnimateClick: () -> Unit,
-) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .padding(top = 20.dp, bottom = 3.dp)
-    ) {
-        SubcomposeAsyncImage(
-            model = Res.drawable.valorant,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
-            contentScale = ContentScale.Fit
-        )
-
-        Icon(
-            painter = painterResource(Res.drawable.arrow),
-            contentDescription = null,
-            tint = Theme.colors.textPrimary,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 16.dp)
-                .size(26.dp)
-                .clickable { onAnimateClick() }
-        )
-    }
-}
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun AgentsGridScreen(
+fun AgentsGridRoute(
     agentsState: AgentsUIState,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -137,15 +130,53 @@ fun AgentsGridScreen(
     val overlayFraction = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
 
+    // Animation Logic
+    if (startAnimation) {
+        LaunchedEffect(isDarkTheme) {
+            overlayFraction.snapTo(0f)
+            scope.launch {
+                overlayFraction.animateTo(
+                    1f,
+                    animationSpec = keyframes {
+                        durationMillis = 850
+                        0.9f at 520 with CubicBezierEasing(0.2f, 0.8f, 0.2f, 1.0f)
+                        1.03f at 700
+                        1f at 850 with FastOutSlowInEasing
+                    }
+                )
+                viewModel.toggleTheme() // بعد الانميشن فقط
+                startAnimation = false
+            }
+        }
+    }
+
+    // Call the presentation component
+    AgentsGridContent(
+        agentsState = agentsState,
+        sharedTransitionScope = sharedTransitionScope,
+        animatedVisibilityScope = animatedVisibilityScope,
+        overlayFraction = overlayFraction.value,
+        onAgentClick = onAgentClick,
+        onAnimateClick = { startAnimation = true }
+    )
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun AgentsGridContent(
+    agentsState: AgentsUIState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    overlayFraction: Float,
+    onAgentClick: (AgentsModel) -> Unit,
+    onAnimateClick: () -> Unit
+) {
     Box(Modifier.fillMaxSize()) {
-
-
-
         Scaffold(
             containerColor = Theme.colors.background,
             topBar = {
                 AgentsTopBar(
-                    onAnimateClick = { startAnimation = true }
+                    onAnimateClick = onAnimateClick
                 )
             }
         ) { padding ->
@@ -182,27 +213,41 @@ fun AgentsGridScreen(
                 }
             }
         }
-        // Overlay الانيميشن
-        if (startAnimation) {
-            LaunchedEffect(isDarkTheme) {
-                overlayFraction.snapTo(0f)
-                scope.launch {
-                    overlayFraction.animateTo(
-                        1f,
-                        animationSpec = keyframes {
-                            durationMillis = 850
-                            0.9f at 520 with CubicBezierEasing(0.2f, 0.8f, 0.2f, 1.0f)
-                            1.03f at 700
-                            1f at 850 with FastOutSlowInEasing
-                        }
-                    )
-                    viewModel.toggleTheme() // بعد الانميشن فقط
-                    startAnimation = false
-                }
-            }
+        ThemeWipeOverlay(fraction = overlayFraction)
+    }
+}
 
-            ThemeWipeOverlay(fraction = overlayFraction.value)
-        }
+
+@Composable
+fun AgentsTopBar(
+    onAnimateClick: () -> Unit,
+) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .padding(top = 20.dp, bottom = 3.dp)
+    ) {
+
+        CoilImage(
+            url = Res.drawable.valorant,
+            contentDescription = "Valorant Logo",
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center),
+            contentScale = ContentScale.Fit
+        )
+
+        Icon(
+            painter = painterResource(Res.drawable.arrow),
+            contentDescription = null,
+            tint = Theme.colors.textPrimary,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp)
+                .size(26.dp)
+                .clickable { onAnimateClick() }
+        )
     }
 }
 
@@ -214,8 +259,8 @@ fun AgentCard(
     sharedTransitionScope: SharedTransitionScope,
     onItemClick: (String) -> Unit
 ) {
-    var dominantColor by remember { mutableStateOf(Color.Gray) }
 
+    var dominantColor by remember { mutableStateOf(Color.Gray) }
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -228,7 +273,11 @@ fun AgentCard(
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
-
+    LaunchedEffect(agent.fullPortrait){
+        calculateDominantColor(source = agent.fullPortrait.orEmpty()) { color ->
+            dominantColor = color
+        }
+    }
     Box(
         modifier = Modifier
             .padding(9.dp)
@@ -275,16 +324,6 @@ fun AgentCard(
                     }
                 },
                 onSuccess = {
-                    val source = agent.fullPortrait.orEmpty()
-                    val bytes = source.encodeToByteArray()
-                    val sums = IntArray(3)
-                    for (i in bytes.indices) {
-                        sums[i % 3] = (sums[i % 3] + (bytes[i].toInt() and 0xFF)) % 256
-                    }
-                    val r = sums[0] / 255f
-                    val g = sums[1] / 255f
-                    val b = sums[2] / 255f
-                    dominantColor = Color(r, g, b)
                 },
                 contentScale = ContentScale.Fit,
                 modifier = Modifier

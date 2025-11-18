@@ -7,9 +7,9 @@ import androidx.compose.runtime.LaunchedEffect
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.compose.koinInject
-import com.larryyu.ui.view.AgentScreen
 import com.larryyu.presentation.viewmodel.AgentsViewModel
 import com.larryyu.presentation.uistates.AgentsIntent
+import com.larryyu.ui.view.AgentsScreen
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -29,11 +29,7 @@ fun AppGraph(
             initialRoute = Routes.Agents.route
         ) {
             scene(Routes.Agents.route) {
-                AgentScreen(
-                    onDetailsClick = { agentId ->
-                        navigator.navigate(Routes.AgentDetails.createRoute(agentId))
-                    }
-                )
+                AgentsScreen()
             }
         }
     }

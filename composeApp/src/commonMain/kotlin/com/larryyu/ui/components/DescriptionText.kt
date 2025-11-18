@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -14,19 +15,19 @@ import com.larryyu.ui.theme.Theme
 
 @Composable
 fun DescriptionText(
-    agent: AgentDetailsData,
+    text: String,
     modifier: Modifier = Modifier,
     contentDescription: String,
-    maxLines: Int = Int.MAX_VALUE
+    maxLines: Int = Int.MAX_VALUE,
+    textStyle: TextStyle = Theme.typography.body12
 ) {
     Text(
-        text = agent.description ?: "",
-        color = Theme.colors.textPrimary,
+        text = text,
+        style = textStyle,
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier.padding(5.dp).semantics {
             this.contentDescription = contentDescription
         },
-        fontSize = 14.sp
     )
 }

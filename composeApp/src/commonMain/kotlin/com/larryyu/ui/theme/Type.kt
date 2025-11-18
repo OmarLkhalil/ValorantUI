@@ -24,7 +24,7 @@ fun welcomeTextStyle(colors: ValorantUIColors): TextStyle {
 }
 
 @Composable
-fun headline16(colors: ValorantUIColors): TextStyle {
+fun body16(colors: ValorantUIColors): TextStyle {
     return TextStyle(
         fontSize = 16.sp,
         fontFamily = FontFamily(Font(Res.font.dryme)),
@@ -58,7 +58,7 @@ fun headline18(colors: ValorantUIColors): TextStyle {
 }
 
 @Composable
-fun headline12(colors: ValorantUIColors): TextStyle {
+fun body12(colors: ValorantUIColors): TextStyle {
     return TextStyle(
         fontSize = 12.sp,
         fontFamily = FontFamily(Font(Res.font.dryme)),
@@ -70,7 +70,7 @@ fun headline12(colors: ValorantUIColors): TextStyle {
 }
 
 @Composable
-fun headline8(colors: ValorantUIColors): TextStyle {
+fun body8(colors: ValorantUIColors): TextStyle {
     return TextStyle(
         fontSize = 7.sp,
         fontFamily = FontFamily(Font(Res.font.dryme)),
@@ -84,21 +84,21 @@ fun headline8(colors: ValorantUIColors): TextStyle {
 @Immutable
 data class ValorantUITypography(
     val welcomeTextStyle: TextStyle,
-    val headline16: TextStyle,
+    val body16: TextStyle,
     val headline18: TextStyle,
     val headline20: TextStyle,
-    val headline12: TextStyle,
-    val headline8: TextStyle,
+    val body12: TextStyle,
+    val body8: TextStyle,
 )
 
 @Composable
 fun provideValorantUITypography(colors: ValorantUIColors): ValorantUITypography {
     return ValorantUITypography(
         welcomeTextStyle = welcomeTextStyle(colors),
-        headline16 = headline16(colors),
+        body16 = body16(colors),
         headline20 = headline20(colors),
         headline18 = headline18(colors),
-        headline12 = headline12(colors),
-        headline8 = headline8(colors),
+        body12 = body12(colors),
+        body8 = body8(colors),
     )
 }
