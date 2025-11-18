@@ -82,6 +82,14 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
             implementation(libs.coil.network.okhttp)
+
+            //datastore
+            implementation(libs.androidx.datastore.core.okio)
+            implementation(libs.androidx.datastore.preferences)
+            implementation(libs.kotlinx.coroutines.core.v190)
+
+
+
         }
 
         // Android-only dependencies (place all Android-specific compose / koin android / android-driver here)

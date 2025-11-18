@@ -3,40 +3,60 @@ package com.larryyu.ui.view
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.SubcomposeAsyncImage
+import com.larryyu.domain.model.AbilitiesItemDetails
 import com.larryyu.domain.model.AgentDetailsData
 import com.larryyu.presentation.uistates.AgentDetailsIntent
 import com.larryyu.presentation.viewmodel.AgentDetailsViewModel
-import com.larryyu.presentation.viewmodel.AgentsViewModel
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.Font
+import com.larryyu.ui.components.CoilImage
+import com.larryyu.ui.components.DescriptionText
+import com.larryyu.ui.components.HeaderText
+import com.larryyu.ui.theme.Theme
 import org.koin.compose.koinInject
-import valorantui.composeapp.generated.resources.Res
-import valorantui.composeapp.generated.resources.dryme
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -47,83 +67,136 @@ fun AgentDetailsScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onBack: () -> Unit,
 ) {
-
     val viewModel: AgentDetailsViewModel = koinInject()
+
     LaunchedEffect(Unit) {
         viewModel.dispatch(AgentDetailsIntent.FetchAgentDetails(agentId))
     }
-    var dominantColor by remember { mutableStateOf(Color.Gray) }
+
+    val surfaceColor = Theme.colors.surface
     val status by viewModel.state.collectAsState()
-    val sheetState: SheetState = rememberModalBottomSheetState()
-
-
-
+    var dominantColor by remember { mutableStateOf(surfaceColor) }
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(dominantColor),
         topBar = {
             Box(
-                modifier = Modifier
-                    .height(60.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.height(60.dp).fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                // 🔙 زر الرجوع في بداية الـ TopBar
-//                Icon(
-//                    imageVector = Icons,
-//                    contentDescription = "Back",
-//                    tint = Color.White,
-//                    modifier = Modifier
-//                        .align(Alignment.CenterStart)
-//                        .padding(start = 16.dp)
-//                        .clickable { onBack() } // ← هنا بنستدعي الـ callback
-//                )
-
-                Text(
+                HeaderText(
                     text = status.agentDetails.displayName ?: "",
-                    color = Color.White,
-                    fontFamily = FontFamily(Font(Res.font.dryme)),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    modifier = Modifier.align(Alignment.Center).clickable {
-                        onBack()
-                    }
+                    modifier = Modifier.clickable { onBack() },
+                    contentDescription = "It's the Agent Name ${status.agentDetails.displayName}"
                 )
             }
         },
-        containerColor = Color.Black.copy(0.9f)
+        containerColor = dominantColor.copy(alpha = 0.9f)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-        ) {
-            AgentDetailsCard(
-                agent = status.agentDetails,
-                animatedVisibilityScope,
-                sharedTransitionScope,
-                sheetState
-            ) {
-                dominantColor = it
+        Box(modifier = Modifier.fillMaxSize().padding(it)) {
+
+            LaunchedEffect(status.agentDetails) {
+                val source = status.agentDetails.fullPortrait.orEmpty()
+                val bytes = source.encodeToByteArray()
+                val sums = IntArray(3)
+                for (i in bytes.indices) {
+                    sums[i % 3] = (sums[i % 3] + (bytes[i].toInt() and 0xFF)) % 256
+                }
+                val r = sums[0] / 255f
+                val g = sums[1] / 255f
+                val b = sums[2] / 255f
+                dominantColor = Color(r, g, b)
             }
+
+            AgentDetailsCardComponent(
+                agent = status.agentDetails,
+                dominantColor = dominantColor,
+                animatedVisibilityScope = animatedVisibilityScope,
+                sharedTransitionScope = sharedTransitionScope
+            )
+        }
+    }
+}
+
+@Composable
+fun AgentInfoDetailsComponent(agent: AgentDetailsData, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(5.dp)
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(10.dp))
+        AgentRoleRow(agent = agent)
+        Spacer(modifier = Modifier.height(30.dp))
+        AgentAbilitiesRow(agent = agent)
+        Spacer(modifier = Modifier.height(10.dp))
+        DescriptionText(
+            agent = agent,
+            contentDescription = "Agent Description for ${agent.displayName}, it's Description is ${agent.description}"
+        )
+    }
+}
+
+
+@Composable
+fun AbilityItem(ability: AbilitiesItemDetails) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(100.dp)
+    ) {
+        CoilImage(
+            url = ability.displayIcon,
+            contentDescription = "It's the ability Icon for ${ability.displayName}",
+            modifier = Modifier.size(50.dp)
+        )
+        Text(
+            text = ability.displayName ?: "",
+            color = Theme.colors.textPrimary,
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun AgentRoleRow(agent: AgentDetailsData) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        CoilImage(
+            url = agent.role?.displayIcon,
+            contentDescription = "It's the Agent Role Icon for ${agent.role?.displayName}",
+            modifier = Modifier.size(30.dp)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = agent.role?.displayName ?: "",
+            color = Theme.colors.textPrimary,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun AgentAbilitiesRow(agent: AgentDetailsData) {
+    LazyRow {
+        items(agent.abilities ?: emptyList()) {
+            AbilityItem(it)
         }
     }
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun AgentDetailsCard(
+fun AgentDetailsCardComponent(
     agent: AgentDetailsData,
-    animatedContentScope: AnimatedVisibilityScope,
-    sharedTransitionScope: SharedTransitionScope,
-    sheetState: SheetState,
-    viewModel: AgentsViewModel = koinInject(),
-    onDominant: (Color) -> Unit
+    dominantColor: Color,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope
 ) {
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    var offsetY by remember { mutableFloatStateOf(0f) }
-
-    var dominantColor by remember { mutableStateOf(Color.Gray) }
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val scale by infiniteTransition.animateFloat(
         initialValue = 2f,
@@ -137,62 +210,28 @@ fun AgentDetailsCard(
         ), label = ""
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        SubcomposeAsyncImage(
-            model = agent.background,
-            contentDescription = null,
-            loading = {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(30.dp),
-                        color = Color.White
-                    )
-                }
-            },
-            contentScale = ContentScale.Crop,
+    Box(modifier = Modifier.fillMaxSize()) {
+        CoilImage(
+            url = agent.background,
+            contentDescription = "It's the Agent Background for ${agent.displayName}",
             modifier = Modifier
                 .height(400.dp)
                 .padding(top = 50.dp)
                 .align(Alignment.TopCenter)
         )
+
         with(sharedTransitionScope) {
-            SubcomposeAsyncImage(
-                model = agent.fullPortrait,
-                contentDescription = null,
-                onSuccess = { success ->
-//                    viewModel.calcDomaintColor(
-//                        drawable = success.result.image as BitmapImage
-//                    ) { color ->
-//                        dominantColor = color
-//                        onDominant(dominantColor)
-//                    }
-                },
-                loading = {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(30.dp),
-                            color = Color.White
-                        )
-                    }
-                },
+            CoilImage(
+                url = agent.fullPortrait,
+                contentDescription = "It's the Agent Portrait for ${agent.displayName}",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(width = 250.dp, height = 350.dp) // حجم مناسب للـ Details
-                    .align(Alignment.TopCenter)          // يظهر من فوق بدل ما يختفي تحت
-                   .sharedElement(
+                    .size(width = 250.dp, height = 350.dp)
+                    .align(Alignment.TopCenter)
+                    .sharedElement(
                         sharedContentState = rememberSharedContentState(key = agent.uuid ?: ""),
-                        animatedVisibilityScope = animatedContentScope
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
-                    .pointerInput(Unit) {
-                        detectDragGestures { change, dragAmount ->
-                            change.consume()
-                            offsetX += dragAmount.x
-                            offsetY += dragAmount.y
-                        }
-                    }
                     .scale(scale)
             )
         }
@@ -201,129 +240,21 @@ fun AgentDetailsCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
+                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            Color.Black.copy(alpha = 0.4f),
-                            Color.Transparent
+                            dominantColor.copy(alpha = 0.9f),
+                            Color.White
                         )
                     )
                 )
+                .align(Alignment.BottomCenter)
         )
 
-        val coroutineScope = rememberCoroutineScope()
-        var visible by remember { mutableStateOf(true) }
-
-        if (visible) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    coroutineScope.launch {
-                        sheetState.hide()
-                        visible = false
-                    }
-                },
-                containerColor = dominantColor.copy(alpha = 0.5f),
-                sheetState = sheetState
-            ) {
-                AgentInfoDetails(
-                    agent = agent, modifier = Modifier
-                        .height(300.dp)
-                )
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 20.dp,
-                            topEnd = 20.dp
-                        )
-                    )
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                dominantColor.copy(alpha = 0.9f),
-                                dominantColor.copy(alpha = 0.2f)
-                            )
-                        )
-                    )
-                    .align(Alignment.BottomCenter)
-            )
-
-            AgentInfoDetails(
-                agent = agent, modifier = Modifier
-                    .height(300.dp)
-                    .align(Alignment.BottomCenter)
-            )
-        }
-
-    }
-}
-
-@Composable
-fun AgentInfoDetails(agent: AgentDetailsData, modifier: Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(5.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-//        Spacer(modifier = Modifier.height(10.dp))
-//        Text(
-//            text = agent.displayName ?: "",
-//            color = Color.White,
-//            fontFamily = FontFamily(Font(R.font.dryme)),
-//            fontSize = 26.sp
-//        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SubcomposeAsyncImage(
-                model = agent.role?.displayIcon,
-                contentDescription = null,
-                modifier = Modifier.size(30.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = agent.role?.displayName ?: "",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Spacer(modifier = Modifier.height(30.dp))
-        LazyRow {
-            items(agent.abilities ?: emptyList()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(100.dp)
-                ) {
-                    SubcomposeAsyncImage(
-                        model = it.displayIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-                    Text(
-                        text = it.displayName ?: "",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = agent.description ?: "",
-            color = Color.White,
-            modifier = Modifier.padding(5.dp),
-            fontSize = 12.sp
+        AgentInfoDetailsComponent(
+            agent = agent,
+            modifier = Modifier.align(Alignment.BottomCenter).height(300.dp)
         )
     }
 }

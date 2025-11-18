@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -37,12 +38,20 @@ import com.larryyu.domain.model.AgentsModel
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
 import com.larryyu.presentation.viewmodel.AgentsViewModel
+import com.larryyu.ui.components.ThemeWipeOverlay
+import com.larryyu.ui.theme.Theme
+import com.larryyu.ui.theme.ThemeViewModel
+import com.larryyu.ui.theme.ValorantUIColors
+import kotlinx.coroutines.launch
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import valorantui.composeapp.generated.resources.Res
+import valorantui.composeapp.generated.resources.arrow
 import valorantui.composeapp.generated.resources.dryme
 import valorantui.composeapp.generated.resources.valorant
+
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -63,7 +72,6 @@ fun AgentScreen(
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "agentsTransition"
         ) { targetAgent ->
-
             if (targetAgent == null) {
                 AgentsGridScreen(
                     agentsState = agentsState,
@@ -84,18 +92,36 @@ fun AgentScreen(
 }
 
 @Composable
-fun AgentsTopBar() {
-    SubcomposeAsyncImage(
-        model = Res.drawable.valorant,
-        contentDescription = null,
-        modifier = Modifier
-            .padding(top = 20.dp, bottom = 3.dp)
+fun AgentsTopBar(
+    onAnimateClick: () -> Unit,
+) {
+    Box(
+        Modifier
             .fillMaxWidth()
-            .height(60.dp),
-        contentScale = ContentScale.Fit
-    )
-}
+            .height(60.dp)
+            .padding(top = 20.dp, bottom = 3.dp)
+    ) {
+        SubcomposeAsyncImage(
+            model = Res.drawable.valorant,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center),
+            contentScale = ContentScale.Fit
+        )
 
+        Icon(
+            painter = painterResource(Res.drawable.arrow),
+            contentDescription = null,
+            tint = Theme.colors.textPrimary,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp)
+                .size(26.dp)
+                .clickable { onAnimateClick() }
+        )
+    }
+}
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -103,43 +129,82 @@ fun AgentsGridScreen(
     agentsState: AgentsUIState,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    viewModel: ThemeViewModel = koinInject(),
     onAgentClick: (AgentsModel) -> Unit
 ) {
-    Scaffold(
-        topBar = { AgentsTopBar() },
-        containerColor = Color.Black.copy(0.9f)
-    ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            when {
-                agentsState.isLoading -> CircularProgressIndicator(
-                    Modifier.align(Alignment.Center),
-                    color = Color.White
-                )
+    val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+    var startAnimation by remember { mutableStateOf(false) }
+    val overlayFraction = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
 
-                agentsState.error != null -> Text(
-                    text = agentsState.error,
-                    color = Color.Red,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+    Box(Modifier.fillMaxSize()) {
 
-                else -> LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    items(agentsState.agents, key = { it.uuid }) { agent ->
-                        AgentCard(
-                            agent = agent,
-                            sharedTransitionScope = sharedTransitionScope,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            onItemClick = { onAgentClick(agent) }
-                        )
+
+
+        Scaffold(
+            containerColor = Theme.colors.background,
+            topBar = {
+                AgentsTopBar(
+                    onAnimateClick = { startAnimation = true }
+                )
+            }
+        ) { padding ->
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                when {
+                    agentsState.isLoading -> CircularProgressIndicator(
+                        Modifier.align(Alignment.Center),
+                        color = Theme.colors.textPrimary
+                    )
+
+                    agentsState.error != null -> Text(
+                        text = agentsState.error,
+                        color = Theme.colors.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    else -> LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(8.dp)
+                    ) {
+                        items(agentsState.agents, key = { it.uuid }) { agent ->
+                            AgentCard(
+                                agent = agent,
+                                sharedTransitionScope = sharedTransitionScope,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                onItemClick = { onAgentClick(agent) }
+                            )
+                        }
                     }
                 }
             }
         }
+        // Overlay الانيميشن
+        if (startAnimation) {
+            LaunchedEffect(isDarkTheme) {
+                overlayFraction.snapTo(0f)
+                scope.launch {
+                    overlayFraction.animateTo(
+                        1f,
+                        animationSpec = keyframes {
+                            durationMillis = 850
+                            0.9f at 520 with CubicBezierEasing(0.2f, 0.8f, 0.2f, 1.0f)
+                            1.03f at 700
+                            1f at 850 with FastOutSlowInEasing
+                        }
+                    )
+                    viewModel.toggleTheme() // بعد الانميشن فقط
+                    startAnimation = false
+                }
+            }
+
+            ThemeWipeOverlay(fraction = overlayFraction.value)
+        }
     }
 }
-
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -147,11 +212,10 @@ fun AgentCard(
     agent: AgentsModel,
     animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope,
-    viewModel: AgentsViewModel = koinInject(),
     onItemClick: (String) -> Unit
 ) {
-
     var dominantColor by remember { mutableStateOf(Color.Gray) }
+
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -193,19 +257,21 @@ fun AgentCard(
                         )
                     )
                 )
-                .clickable {
-                    onItemClick(agent.uuid)
-                }
+                .clickable { onItemClick(agent.uuid) }
                 .height(140.dp)
                 .width(130.dp),
         )
+
         with(sharedTransitionScope) {
             SubcomposeAsyncImage(
                 model = agent.fullPortrait,
                 contentDescription = null,
                 loading = {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(30.dp), color = Color.White)
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(30.dp),
+                            color = Theme.colors.textPrimary
+                        )
                     }
                 },
                 onSuccess = {
@@ -232,7 +298,6 @@ fun AgentCard(
             )
         }
 
-
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp, bottomStart = 50.dp))
@@ -240,8 +305,9 @@ fun AgentCard(
                 .padding(horizontal = 5.dp)
                 .width(130.dp)
                 .align(Alignment.BottomCenter)
-                .background(dominantColor.copy(alpha = 0.2f))
+                .background(Theme.colors.surface.copy(alpha = 0.6f))
         )
+
         AgentInfo(
             agent = agent,
             modifier = Modifier
@@ -250,7 +316,6 @@ fun AgentCard(
                 .padding(bottom = 10.dp)
         )
     }
-
 }
 
 @Composable
@@ -261,10 +326,13 @@ fun AgentInfo(agent: AgentsModel, modifier: Modifier) {
     ) {
         Text(
             text = agent.displayName ?: "",
-            color = Color.White,
+            color = Theme.colors.headingText,
             fontFamily = FontFamily(Font(Res.font.dryme)),
             fontSize = 18.sp
         )
-        Text(text = agent.role?.displayName ?: "", color = Color.White)
+        Text(
+            text = agent.role?.displayName ?: "",
+            color = Theme.colors.textSecondary
+        )
     }
 }

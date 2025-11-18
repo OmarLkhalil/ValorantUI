@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.0"
+datastoreCoreOkio = "1.1.7"
 kotlin = "2.2.21"
 
 # Android SDK targets
@@ -11,6 +12,7 @@ android-targetSdk = "36"
 coreKtx = "1.17.0"
 coreKtxVersion = "1.17.0"
 androidx-activityCompose = "1.8.2"
+kotlinxCoroutinesCore = "1.9.0"
 navigationCompose = "2.9.6"
 
 # Compose / Tooling
@@ -106,10 +108,15 @@ material = "1.10.0"
 
 napier = "2.6.1"
 ktor = "2.3.7"
+kotlinStdlib = "2.2.21"
+kotlinTest = "2.2.21"
+runner = "1.5.2"
+core = "1.5.0"
 
 [libraries]
 # Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-core-okio = { module = "androidx.datastore:datastore-core-okio", version.ref = "datastoreCoreOkio" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -129,6 +136,7 @@ androidx-compose-bom-alpha = { group = "dev.chrisbanes.compose", name = "compose
 androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material_icons_extended_v" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+kotlinx-coroutines-core-v190 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 sceneview = { group = "io.github.sceneview", name = "arsceneview", version.ref = "sceneview" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil_compose_v" }
 
@@ -195,6 +203,10 @@ koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin_
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin_android" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin_compose" }
 koin-androidx-viewmodel = { group = "io.insert-koin", name = "koin-androidx-viewmodel", version.ref = "koin_android" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlinTest" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -211,4 +223,6 @@ kmp-NativeCoroutines-plugin = { id = "com.rickclephas.kmp.nativecoroutines", ver
 buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 ksp = { id = 'com.google.devtools.ksp', version.ref = 'ksp' }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+android-lint = { id = "com.android.lint", version.ref = "agp" }
 
