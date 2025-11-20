@@ -23,57 +23,64 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.larryyu.ui.navigation.AppGraph
-import com.larryyu.ui.navigation.Routes
+import com.larryyu.ui.navigation.Agents
+import com.larryyu.ui.navigation.Guns
 import com.larryyu.ui.theme.ValorantUITheme
-import moe.tlaster.precompose.PreComposeApp
-import moe.tlaster.precompose.navigation.rememberNavigator
 import org.jetbrains.compose.resources.Font
 import valorantui.composeapp.generated.resources.Res
 import valorantui.composeapp.generated.resources.dryme
 
 @Composable
 fun App() {
-    PreComposeApp {
-        ValorantUITheme {
-            val navigator = rememberNavigator()
+    ValorantUITheme {
+        val navController = rememberNavController()
+        val navBackStackEntry = navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry.value?.destination?.route
 
-            val bottomItems = listOf(
-                Routes.Agents.route,
-                Routes.Guns.route
-            )
+        val bottomItems = listOf(
+            BottomNavItem(Agents, "Agents"),
+            BottomNavItem(Guns, "Guns")
+        )
 
-            val currentRoute = navigator.currentEntry.collectAsState(null).value?.route?.route
-
-            Scaffold(
-                bottomBar = {
-                    AIBottomNavigation(
-                        items = bottomItems,
-                        currentRoute = currentRoute,
-                        onNavigate = { route ->
-                            navigator.navigate(route)
+        Scaffold(
+            bottomBar = {
+                AIBottomNavigation(
+                    items = bottomItems,
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                    )
-                }
-            ) { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize()
-                ) {
-                    AppGraph(navigator = navigator)
-                }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) {
+                AppGraph(navController = navController)
             }
         }
     }
 }
 
 
+data class BottomNavItem(val route: Any, val title: String)
+
 @Composable
 fun AIBottomNavigation(
-    items: List<String>,
+    items: List<BottomNavItem>,
     currentRoute: String?,
-    onNavigate: (String) -> Unit
+    onNavigate: (Any) -> Unit
 ) {
     NavigationBar(
         containerColor = Color.Black,
@@ -86,13 +93,14 @@ fun AIBottomNavigation(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            items.forEach { route ->
-                val isSelected = currentRoute == route
+            items.forEach { item ->
+                val routeClass = item.route::class.qualifiedName
+                val isSelected = currentRoute?.contains(routeClass ?: "") == true
 
                 BottomNavigationItem(
-                    title = route.replaceFirstChar { it.uppercase() },
+                    title = item.title,
                     selected = isSelected,
-                    onClick = { onNavigate(route) }
+                    onClick = { onNavigate(item.route) }
                 )
             }
         }

@@ -1,13 +1,12 @@
 package com.larryyu.ui.navigation
 
-sealed class Routes(val route: String) {
+import kotlinx.serialization.Serializable
 
-    object Agents : Routes("Agents")
-    object Guns : Routes("Guns")
+@Serializable
+object Agents
 
-    object AgentDetails : Routes("AgentDetail/{id}") {
-        fun createRoute(agentId: String): String {
-            return "AgentDetail/$agentId"
-        }
-    }
-}
+@Serializable
+object Guns
+
+@Serializable
+data class AgentDetails(val agentId: String)

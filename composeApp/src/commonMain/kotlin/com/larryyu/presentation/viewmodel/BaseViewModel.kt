@@ -20,7 +20,7 @@ abstract class BaseViewModel<I, S : UiState>(
 
     private val intentFlow = MutableSharedFlow<I>()
 
-    private val viewModelScope = CoroutineScope(Dispatchers.IO)
+    private val viewModelScope = CoroutineScope(Dispatchers.Default)
 
     init {
         viewModelScope.launch {
@@ -30,7 +30,7 @@ abstract class BaseViewModel<I, S : UiState>(
         }
     }
 
-    fun dispatch(intent: I) {
+    fun sendIntent(intent: I) {
         viewModelScope.launch { intentFlow.emit(intent) }
     }
 

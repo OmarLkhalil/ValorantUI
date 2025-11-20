@@ -1,4 +1,4 @@
-package com.larryyu.ui.extensions
+package com.larryyu.ui.components.extensions
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow

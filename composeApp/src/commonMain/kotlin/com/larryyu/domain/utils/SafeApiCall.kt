@@ -1,6 +1,5 @@
 package com.larryyu.domain.utils
 
-import com.larryyu.domain.utils.DataState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +25,7 @@ suspend fun <T> safeApiCall(
     emit(DataState.Loading)
 }.catch {
     emit(handleError(it))
-}.flowOn(Dispatchers.IO)
+}.flowOn(Dispatchers.Default)
 
 
 fun <T> handleSuccess(response: T): DataState<T> {

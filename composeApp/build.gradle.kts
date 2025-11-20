@@ -72,8 +72,8 @@ kotlin {
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines.extensions)
 
-            api(libs.preCompose)
-            api(libs.preCompose.viewmodel)
+            // Navigation Compose Multiplatform
+            implementation(libs.navigation.compose.multiplatform)
 
             // Other multiplatform utilities
             implementation(libs.multiplatform.settings)

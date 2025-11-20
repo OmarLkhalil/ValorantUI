@@ -4,14 +4,15 @@ import com.larryyu.domain.repository.AgentsRepo
 import com.larryyu.domain.utils.DataState
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
-import com.larryyu.ui.extensions.EventFlow
+import com.larryyu.ui.components.extensions.EventFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 
 class AgentsViewModel(
@@ -21,7 +22,7 @@ class AgentsViewModel(
     private val _agentsState = MutableStateFlow(AgentsUIState())
     val agentsState: StateFlow<AgentsUIState> = _agentsState
 
-    private val viewModelScope = CoroutineScope(Dispatchers.IO)
+    private val viewModelScope = CoroutineScope(Dispatchers.Default)
 
     private val intentState = MutableSharedFlow<AgentsIntent>()
 
@@ -89,7 +90,7 @@ class AgentsViewModel(
     }
 
     private fun launchAgentsViewModelScope(block: suspend CoroutineScope.() -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 block()
             } catch (throwable: Throwable) {
@@ -104,9 +105,7 @@ class AgentsViewModel(
     }
 
     private suspend fun updateAgentsUiState(uiState: AgentsUIState) {
-        withContext(Dispatchers.Main) {
-            _agentsState.emit(uiState)
-        }
+        _agentsState.emit(uiState)
     }
 
 

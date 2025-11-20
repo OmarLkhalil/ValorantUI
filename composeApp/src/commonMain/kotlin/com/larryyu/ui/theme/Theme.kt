@@ -37,6 +37,23 @@ fun ValorantUITheme(
 }
 
 @Composable
+fun ValorantUITheme(
+    isDark: Boolean,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (isDark) DarkValorantUIColors else LightValorantUIColors
+
+    CompositionLocalProvider(
+        localColorScheme provides colorScheme,
+        localTypography provides provideValorantUITypography(colorScheme),
+        localShapes provides ValorantUIShapes(),
+        localDimens provides ValorantUIDimens(),
+    ) {
+        content()
+    }
+}
+
+@Composable
 @ReadOnlyComposable
 fun isDarkTheme() = DarkThemeValue.current.value
 

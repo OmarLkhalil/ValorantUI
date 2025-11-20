@@ -7,12 +7,7 @@ import com.larryyu.presentation.viewmodel.UiState
 
 data class GunsState(
     val guns: List<GunsData> = emptyList(),
-    override val isLoading: Boolean = false,
-    override val error: String? = null
-)  : UiState
-
-data class BundlesState(
     val bundles: List<BundlesData> = emptyList(),
     override val isLoading: Boolean = false,
     override val error: String? = null
-) : UiState
+)  : UiState

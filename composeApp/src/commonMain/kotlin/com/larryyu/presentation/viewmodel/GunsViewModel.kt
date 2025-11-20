@@ -11,22 +11,40 @@ class GunsViewModel(
     private val getAllBundlesUseCase: GetAllBundlesUseCase,
 ) : BaseViewModel<GunsIntent, GunsState>(GunsState()) {
     val gState = state
+
     override suspend fun handleIntent(intent: GunsIntent) {
         super.handleIntent(intent)
         when (intent) {
-            is GunsIntent.FetchGuns -> fetchGuns()
+            is GunsIntent.FetchGuns -> {
+                fetchAllData()
+            }
         }
     }
 
-    private suspend fun fetchGuns() {
-        collectDataState(getAllGunsUseCase()) { response ->
-            setState { copy(guns = response.data ?: emptyList()) }
+    private suspend fun fetchAllData() {
+        // Start loading
+        setState { copy(isLoading = true, error = null) }
+
+        try {
+            // Fetch guns
+            collectDataState(getAllGunsUseCase()) { response ->
+                setState { copy(guns = response.data ?: emptyList()) }
+            }
+
+            // Fetch bundles
+            collectDataState(getAllBundlesUseCase()) { response ->
+                setState { copy(bundles = response.data ?: emptyList()) }
+            }
+
+        } catch (e: Exception) {
+            setState { copy(error = e.message ?: "Unknown error") }
+        } finally {
+            // Stop loading in all cases
+            setState { copy(isLoading = false) }
         }
     }
 
     override fun onLoading() {
-        super.onLoading()
-        setState { copy(isLoading = true, error = null) }
     }
 
     override fun onError(e: Throwable) {
@@ -35,7 +53,5 @@ class GunsViewModel(
     }
 
     override fun onIdle() {
-        super.onIdle()
-        setState { copy(isLoading = false, error = null) }
     }
 }

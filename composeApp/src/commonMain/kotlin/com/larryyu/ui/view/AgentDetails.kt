@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,12 +48,12 @@ import com.larryyu.domain.model.AbilitiesItemDetails
 import com.larryyu.domain.model.AgentDetailsData
 import com.larryyu.presentation.uistates.AgentDetailsIntent
 import com.larryyu.presentation.viewmodel.AgentDetailsViewModel
+import com.larryyu.ui.components.BackHandler
 import com.larryyu.ui.components.CoilImage
 import com.larryyu.ui.components.DescriptionText
 import com.larryyu.ui.components.HeaderText
 import com.larryyu.ui.components.calculateDominantColor
 import com.larryyu.ui.theme.Theme
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.compose.koinInject
 
 
@@ -66,12 +67,14 @@ fun AgentDetailsScreen(
 ) {
     val viewModel: AgentDetailsViewModel = koinInject()
 
+    BackHandler(onBack = onBack)
+
     LaunchedEffect(Unit) {
-        viewModel.dispatch(AgentDetailsIntent.FetchAgentDetails(agentId))
+        viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails(agentId))
     }
 
     val surfaceColor = Theme.colors.surface
-    val status by viewModel.state.collectAsStateWithLifecycle()
+    val status by viewModel.state.collectAsState()
     var dominantColor by remember { mutableStateOf(surfaceColor) }
 
     LaunchedEffect(status.agentDetails.fullPortrait) {
@@ -163,13 +166,14 @@ fun AgentRoleRow(agent: AgentDetailsData) {
         CoilImage(
             url = agent.role?.displayIcon,
             contentDescription = "It's the Agent Role Icon for ${agent.role?.displayName}",
-            modifier = Modifier.size(30.dp)
+            modifier = Modifier.size(30.dp),
         )
         Spacer(modifier = Modifier.width(10.dp))
         DescriptionText(
             text = agent.role?.displayName ?: "",
             contentDescription = "It's the Agent Role Name for ${agent.role?.displayName}",
-            textStyle = Theme.typography.body16
+            textStyle = Theme.typography.body16,
+            color = Theme.colors.textPrimary
         )
     }
 }

@@ -18,9 +18,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -53,27 +55,22 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import com.larryyu.domain.model.AgentsModel
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
 import com.larryyu.presentation.viewmodel.AgentsViewModel
-import com.larryyu.ui.components.CoilImage
-import com.larryyu.ui.components.ThemeWipeOverlay
+import com.larryyu.ui.components.DescriptionText
 import com.larryyu.ui.components.calculateDominantColor
+import com.larryyu.ui.components.clipToFraction
 import com.larryyu.ui.theme.Theme
 import com.larryyu.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import valorantui.composeapp.generated.resources.Res
 import valorantui.composeapp.generated.resources.arrow
-import valorantui.composeapp.generated.resources.dryme
 import valorantui.composeapp.generated.resources.valorant
 
 
@@ -81,9 +78,8 @@ import valorantui.composeapp.generated.resources.valorant
 @Composable
 fun AgentsScreen(
     viewModel: AgentsViewModel = koinInject(),
-    // onDetailsClick: (String) -> Unit // Removed as internal navigation is handled by selectedAgent state
 ) {
-    val agentsState by viewModel.agentsState.collectAsStateWithLifecycle()
+    val agentsState by viewModel.agentsState.collectAsState()
     val selectedAgent = remember { mutableStateOf<AgentsModel?>(null) }
 
     LaunchedEffect(Unit) {
@@ -97,7 +93,6 @@ fun AgentsScreen(
             label = "agentsTransition"
         ) { targetAgent ->
             if (targetAgent == null) {
-                // State-hoisting component for the grid
                 AgentsGridRoute(
                     agentsState = agentsState,
                     sharedTransitionScope = this@SharedTransitionLayout,
@@ -126,40 +121,48 @@ fun AgentsGridRoute(
     onAgentClick: (AgentsModel) -> Unit
 ) {
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
-    var startAnimation by remember { mutableStateOf(false) }
-    val overlayFraction = remember { Animatable(0f) }
+    val fraction = remember { Animatable(if (isDarkTheme) 1f else 0f) }
     val scope = rememberCoroutineScope()
+    var isAnimating by remember { mutableStateOf(false) }
 
-    // Animation Logic
-    if (startAnimation) {
-        LaunchedEffect(isDarkTheme) {
-            overlayFraction.snapTo(0f)
-            scope.launch {
-                overlayFraction.animateTo(
-                    1f,
-                    animationSpec = keyframes {
-                        durationMillis = 850
-                        0.9f at 520 with CubicBezierEasing(0.2f, 0.8f, 0.2f, 1.0f)
-                        1.03f at 700
-                        1f at 850 with FastOutSlowInEasing
-                    }
-                )
-                viewModel.toggleTheme() // بعد الانميشن فقط
-                startAnimation = false
-            }
+    LaunchedEffect(isDarkTheme) {
+        if (!isAnimating) {
+            fraction.snapTo(if (isDarkTheme) 1f else 0f)
         }
     }
 
-    // Call the presentation component
     AgentsGridContent(
         agentsState = agentsState,
         sharedTransitionScope = sharedTransitionScope,
         animatedVisibilityScope = animatedVisibilityScope,
-        overlayFraction = overlayFraction.value,
+        isDarkTheme = isDarkTheme,
+        animationFraction = fraction.value,
+        isAnimating = isAnimating,
         onAgentClick = onAgentClick,
-        onAnimateClick = { startAnimation = true }
+        onAnimateClick = {
+            if (!isAnimating) {
+                scope.launch {
+                    isAnimating = true
+                    val start = fraction.value
+                    val target = if (isDarkTheme) 0f else 1f
+                    fraction.animateTo(
+                        targetValue = target,
+                        animationSpec = keyframes {
+                            durationMillis = 2000
+                            (start + (target - start) * 0.30f) at 400 using CubicBezierEasing(0.42f, 0.0f, 0.58f, 1.0f)
+                            (start + (target - start) * 0.70f) at 1200 using CubicBezierEasing(0.42f, 0.0f, 0.58f, 1.0f)
+                            (start + (target - start) * 0.95f) at 1700 using CubicBezierEasing(0.42f, 0.0f, 0.58f, 1.0f)
+                            target at 2000 using FastOutSlowInEasing
+                        }
+                    )
+                    viewModel.toggleTheme()
+                    isAnimating = false
+                }
+            }
+        }
     )
 }
+
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -167,53 +170,102 @@ fun AgentsGridContent(
     agentsState: AgentsUIState,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    overlayFraction: Float,
+    isDarkTheme: Boolean,
+    animationFraction: Float,
+    isAnimating: Boolean,
     onAgentClick: (AgentsModel) -> Unit,
     onAnimateClick: () -> Unit
 ) {
-    Box(Modifier.fillMaxSize()) {
-        Scaffold(
-            containerColor = Theme.colors.background,
-            topBar = {
-                AgentsTopBar(
+    if (isAnimating) {
+        Box(Modifier.fillMaxSize()) {
+            com.larryyu.ui.theme.ValorantUITheme(isDark = false) {
+                AgentsGridScaffold(
+                    agentsState = agentsState,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    onAgentClick = onAgentClick,
                     onAnimateClick = onAnimateClick
                 )
             }
-        ) { padding ->
+
             Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding)
+                modifier = Modifier
+                    .matchParentSize()
+                    .clipToFraction(animationFraction)
             ) {
-                when {
-                    agentsState.isLoading -> CircularProgressIndicator(
-                        Modifier.align(Alignment.Center),
-                        color = Theme.colors.textPrimary
+                com.larryyu.ui.theme.ValorantUITheme(isDark = true) {
+                    AgentsGridScaffold(
+                        agentsState = agentsState,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        onAgentClick = onAgentClick,
+                        onAnimateClick = onAnimateClick
                     )
+                }
+            }
+        }
+    } else {
+        com.larryyu.ui.theme.ValorantUITheme(isDark = isDarkTheme) {
+            AgentsGridScaffold(
+                agentsState = agentsState,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
+                onAgentClick = onAgentClick,
+                onAnimateClick = onAnimateClick
+            )
+        }
+    }
+}
 
-                    agentsState.error != null -> Text(
-                        text = agentsState.error,
-                        color = Theme.colors.error,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
 
-                    else -> LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(8.dp)
-                    ) {
-                        items(agentsState.agents, key = { it.uuid }) { agent ->
-                            AgentCard(
-                                agent = agent,
-                                sharedTransitionScope = sharedTransitionScope,
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                onItemClick = { onAgentClick(agent) }
-                            )
-                        }
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun AgentsGridScaffold(
+    agentsState: AgentsUIState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onAgentClick: (AgentsModel) -> Unit,
+    onAnimateClick: () -> Unit
+) {
+    Scaffold(
+        containerColor = Theme.colors.background,
+        topBar = {
+            AgentsTopBar(onAnimateClick = onAnimateClick)
+        }
+    ) { padding ->
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            when {
+                agentsState.isLoading -> CircularProgressIndicator(
+                    Modifier.align(Alignment.Center),
+                    color = Theme.colors.textPrimary
+                )
+
+                agentsState.error != null -> Text(
+                    text = agentsState.error,
+                    color = Theme.colors.error,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                else -> LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(agentsState.agents, key = { it.uuid }) { agent ->
+                        AgentCard(
+                            agent = agent,
+                            sharedTransitionScope = sharedTransitionScope,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            onItemClick = { onAgentClick(agent) }
+                        )
                     }
                 }
             }
         }
-        ThemeWipeOverlay(fraction = overlayFraction)
     }
 }
 
@@ -229,8 +281,8 @@ fun AgentsTopBar(
             .padding(top = 20.dp, bottom = 3.dp)
     ) {
 
-        CoilImage(
-            url = Res.drawable.valorant,
+        Image(
+            painter = painterResource(Res.drawable.valorant),
             contentDescription = "Valorant Logo",
             modifier = Modifier
                 .fillMaxWidth()
@@ -240,7 +292,7 @@ fun AgentsTopBar(
 
         Icon(
             painter = painterResource(Res.drawable.arrow),
-            contentDescription = null,
+            contentDescription = "Change Theme Icon",
             tint = Theme.colors.textPrimary,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
@@ -273,15 +325,15 @@ fun AgentCard(
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
-    LaunchedEffect(agent.fullPortrait){
+    LaunchedEffect(agent.fullPortrait) {
         calculateDominantColor(source = agent.fullPortrait.orEmpty()) { color ->
             dominantColor = color
         }
     }
     Box(
         modifier = Modifier
-            .padding(9.dp)
-            .height(230.dp)
+            .padding(4.dp)
+            .height(160.dp)
             .width(130.dp)
     ) {
         Box(
@@ -289,13 +341,13 @@ fun AgentCard(
                 .align(Alignment.BottomCenter)
                 .clip(
                     RoundedCornerShape(
-                        topEnd = 140.dp,
+                        topEnd = 120.dp,
                         topStart = 10.dp,
                         bottomStart = 40.dp
                     )
                 )
                 .border(
-                    BorderStroke(2.dp, dominantColor),
+                    BorderStroke(3.dp, dominantColor),
                     RoundedCornerShape(topEnd = 140.dp, topStart = 10.dp, bottomStart = 40.dp)
                 )
                 .background(
@@ -307,7 +359,7 @@ fun AgentCard(
                     )
                 )
                 .clickable { onItemClick(agent.uuid) }
-                .height(140.dp)
+                .height(120.dp)
                 .width(130.dp),
         )
 
@@ -363,15 +415,14 @@ fun AgentInfo(agent: AgentsModel, modifier: Modifier) {
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = agent.displayName ?: "",
-            color = Theme.colors.headingText,
-            fontFamily = FontFamily(Font(Res.font.dryme)),
-            fontSize = 18.sp
+        DescriptionText(
+            text = agent.displayName.orEmpty(),
+            contentDescription = "It's an Agent Name ${agent.displayName}",
+            color = Theme.colors.textPrimary
         )
-        Text(
-            text = agent.role?.displayName ?: "",
-            color = Theme.colors.textSecondary
+        DescriptionText(
+            text = agent.role?.displayName.orEmpty(),
+            contentDescription = "It's an Agent Description ${agent.role?.displayName}"
         )
     }
 }

@@ -18,7 +18,7 @@ actual fun createDataStore(): DataStore<Preferences> {
     return PreferenceDataStoreFactory.createWithPath(
         corruptionHandler = null,
         migrations = emptyList(),
-        scope = CoroutineScope(Dispatchers.IO),
+        scope = CoroutineScope(Dispatchers.Default),
         produceFile = { dataStoreFile }
     )
 }
