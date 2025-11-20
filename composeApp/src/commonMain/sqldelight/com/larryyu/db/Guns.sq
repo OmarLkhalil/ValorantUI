@@ -1,0 +1,16 @@
+CREATE TABLE Guns (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    displayName TEXT,
+    displayIcon TEXT
+);
+
+selectAllGuns:
+SELECT * FROM Guns;
+
+insertGun:
+INSERT OR REPLACE INTO Guns(uuid, displayName, displayIcon)
+VALUES (?, ?, ?);
+
+clearGuns:
+DELETE FROM Guns;
+

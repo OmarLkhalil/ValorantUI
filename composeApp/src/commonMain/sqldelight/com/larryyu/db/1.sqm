@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS Guns (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    displayName TEXT,
+    displayIcon TEXT
+);
+
+CREATE TABLE IF NOT EXISTS Bundles (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    displayName TEXT,
+    displayIcon TEXT,
+    displayNameSubText TEXT,
+    description TEXT,
+    extraDescription TEXT
+);
+

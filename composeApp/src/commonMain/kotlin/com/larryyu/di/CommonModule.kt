@@ -48,7 +48,7 @@ fun commonModule(enableNetworkLogs: Boolean = false) = module {
 
     // ✅ Repository
     single<AgentsRepo> { AgentsRepoImpl(get(), get()) }
-    single<GunsRepo> { GunsRepoImpl(get()) }
+    single<GunsRepo> { GunsRepoImpl(get(), get()) }
 
     // ✅ UseCases
     single<AgentsUseCase> { AgentsUseCaseImpl(get()) }

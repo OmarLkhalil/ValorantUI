@@ -1,0 +1,19 @@
+CREATE TABLE Bundles (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    displayName TEXT,
+    displayIcon TEXT,
+    displayNameSubText TEXT,
+    description TEXT,
+    extraDescription TEXT
+);
+
+selectAllBundles:
+SELECT * FROM Bundles;
+
+insertBundle:
+INSERT OR REPLACE INTO Bundles(uuid, displayName, displayIcon, displayNameSubText, description, extraDescription)
+VALUES (?, ?, ?, ?, ?, ?);
+
+clearBundles:
+DELETE FROM Bundles;
+
