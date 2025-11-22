@@ -146,40 +146,139 @@ workflows:
             echo "✅ XCFramework is available for integration"
           fi
 
-      - name: Take Screenshots on Simulator (Optional)
+      - name: Take Screenshots on Simulator (Automated)
         script: |
-          # Only take screenshots if app was built
+          set -x
+          
+          # Find the built app
           APP_PATH=$(find $CM_BUILD_DIR/build -name "*.app" -type d 2>/dev/null | grep -v "Intermediates" | head -1)
           
-          if [ -n "$APP_PATH" ]; then
-            echo "Found app at: $APP_PATH"
-            
-            # Boot simulator
-            SIMULATOR_NAME="iPhone 15 Pro"
-            xcrun simctl boot "$SIMULATOR_NAME" 2>/dev/null || echo "Simulator already booted or boot failed"
-            
-            # Wait for boot
-            sleep 10
-            
-            # Install app
-            xcrun simctl install booted "$APP_PATH" || echo "Install failed"
-            
-            # Launch app
-            BUNDLE_ID="com.larryyu.valorantui"
-            xcrun simctl launch booted $BUNDLE_ID || echo "Launch failed"
-            
-            # Take screenshots
-            sleep 5
-            mkdir -p screenshots
-            xcrun simctl io booted screenshot screenshots/01_launch.png || echo "Screenshot failed"
-            
-            echo "✅ Screenshot process completed"
-          else
-            echo "⚠️ No .app found - creating placeholder screenshots"
+          if [ -z "$APP_PATH" ]; then
+            echo "⚠️ No .app found - creating placeholder"
             mkdir -p screenshots
             echo "No iOS app built - XCFramework only" > screenshots/README.txt
-            echo "This is expected for Kotlin Multiplatform framework-only builds" >> screenshots/README.txt
+            exit 0
           fi
+          
+          echo "✅ Found app at: $APP_PATH"
+          
+          # Bundle ID
+          BUNDLE_ID="com.larryyu.valorantui"
+          
+          # Create screenshots directory
+          mkdir -p screenshots/light screenshots/dark
+          
+          # Function to take screenshots
+          take_screenshots() {
+            local THEME=$1
+            local SIMULATOR_UDID=$2
+            
+            echo "📸 Taking screenshots in $THEME mode..."
+            
+            # Wait for app to load
+            sleep 5
+            
+            # Screenshot 1: Home/Agents List
+            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/01_agents_list.png"
+            echo "✅ Screenshot 1: Agents List"
+            sleep 2
+            
+            # Simulate tap on first agent (approximate coordinates)
+            xcrun simctl io $SIMULATOR_UDID tap 200 300
+            sleep 3
+            
+            # Screenshot 2: Agent Details
+            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/02_agent_details.png"
+            echo "✅ Screenshot 2: Agent Details"
+            sleep 2
+            
+            # Go back
+            xcrun simctl io $SIMULATOR_UDID tap 30 60
+            sleep 2
+            
+            # Navigate to weapons (tap on bottom nav if exists)
+            xcrun simctl io $SIMULATOR_UDID tap 200 700
+            sleep 3
+            
+            # Screenshot 3: Weapons List
+            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/03_weapons_list.png"
+            echo "✅ Screenshot 3: Weapons List"
+            sleep 2
+            
+            # Tap on weapon
+            xcrun simctl io $SIMULATOR_UDID tap 200 300
+            sleep 3
+            
+            # Screenshot 4: Weapon Details
+            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/04_weapon_details.png"
+            echo "✅ Screenshot 4: Weapon Details"
+            sleep 2
+            
+            # Screenshot 5: Maps (if available)
+            xcrun simctl io $SIMULATOR_UDID tap 30 60
+            sleep 2
+            xcrun simctl io $SIMULATOR_UDID tap 300 700
+            sleep 3
+            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/05_maps.png"
+            echo "✅ Screenshot 5: Maps"
+            
+            echo "✅ Finished $THEME mode screenshots"
+          }
+          
+          # ====== LIGHT MODE SCREENSHOTS ======
+          echo "🌞 Starting Light Mode Screenshots..."
+          
+          SIMULATOR_NAME="iPhone 15 Pro"
+          
+          # Boot simulator
+          xcrun simctl boot "$SIMULATOR_NAME" 2>/dev/null || echo "Simulator already booted"
+          sleep 5
+          
+          # Get simulator UDID
+          SIMULATOR_UDID=$(xcrun simctl list devices | grep "$SIMULATOR_NAME" | grep -E -o -i "([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12})" | head -1)
+          echo "Simulator UDID: $SIMULATOR_UDID"
+          
+          # Set light appearance
+          xcrun simctl ui $SIMULATOR_UDID appearance light
+          sleep 2
+          
+          # Install app
+          xcrun simctl install $SIMULATOR_UDID "$APP_PATH"
+          sleep 2
+          
+          # Launch app
+          xcrun simctl launch $SIMULATOR_UDID $BUNDLE_ID
+          
+          # Take screenshots
+          take_screenshots "light" "$SIMULATOR_UDID"
+          
+          # Terminate app
+          xcrun simctl terminate $SIMULATOR_UDID $BUNDLE_ID
+          sleep 2
+          
+          # ====== DARK MODE SCREENSHOTS ======
+          echo "🌙 Starting Dark Mode Screenshots..."
+          
+          # Set dark appearance
+          xcrun simctl ui $SIMULATOR_UDID appearance dark
+          sleep 2
+          
+          # Launch app again
+          xcrun simctl launch $SIMULATOR_UDID $BUNDLE_ID
+          
+          # Take screenshots
+          take_screenshots "dark" "$SIMULATOR_UDID"
+          
+          # Terminate app
+          xcrun simctl terminate $SIMULATOR_UDID $BUNDLE_ID
+          
+          # Shutdown simulator
+          xcrun simctl shutdown $SIMULATOR_UDID
+          
+          echo "✅ All screenshots completed!"
+          echo "📊 Screenshot summary:"
+          ls -la screenshots/light/
+          ls -la screenshots/dark/
 
       - name: Archive build artifacts
         script: |
@@ -211,8 +310,10 @@ workflows:
 
     artifacts:
       - artifacts/**/*
-      - screenshots/*.png
+      - screenshots/light/*.png
+      - screenshots/dark/*.png
       - screenshots/*.txt
+      - screenshots/**/*.png
 
     publishing:
       email:

@@ -1,0 +1,4 @@
+ENABLE_USER_SCRIPT_SANDBOXING = NO
+FRAMEWORK_SEARCH_PATHS = $(SRCROOT)/../composeApp/build/bin/$(NATIVE_ARCH)-$(CONFIGURATION:lower)Framework
+OTHER_LDFLAGS = $(inherited) -framework ComposeApp
+

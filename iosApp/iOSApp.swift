@@ -17,9 +17,12 @@ struct iOSApp: App {
 }
 
 struct ContentView: View {
+    @Environment(\.colorScheme) var colorScheme
+
     var body: some View {
         ComposeView()
-            .ignoresSafeArea(.keyboard) // Compose has own keyboard handler
+            .ignoresSafeArea(.keyboard)
+            .preferredColorScheme(nil) // Allow system theme switching
     }
 }
 
@@ -28,6 +31,8 @@ struct ComposeView: UIViewControllerRepresentable {
         MainViewControllerKt.MainViewController()
     }
 
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        // Update for theme changes if needed
+    }
 }
 
