@@ -57,7 +57,8 @@ jobs:
           {
             "project_info": {
               "project_number": "000000000000",
-              "project_id": "dummy-project"
+              "project_id": "dummy-project",
+              "storage_bucket": "dummy-project.appspot.com"
             },
             "client": [
               {
@@ -65,6 +66,22 @@ jobs:
                   "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
                   "android_client_info": {
                     "package_name": "com.larryyu.valorantui"
+                  }
+                },
+                "oauth_client": [
+                  {
+                    "client_id": "000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+                    "client_type": 3
+                  }
+                ],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyDummy-Key-For-CI-Build-Only-Not-Real"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
                   }
                 }
               }
