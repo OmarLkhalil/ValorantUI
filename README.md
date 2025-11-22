@@ -39,7 +39,7 @@ Valorant UI is a **Kotlin Multiplatform** mobile application that brings the wor
 
 ## 📸 Screenshots
 
-### Android
+### 📱 Android
 
 <div align="center">
   
@@ -48,6 +48,22 @@ Valorant UI is a **Kotlin Multiplatform** mobile application that brings the wor
 | <img src="screenshots/agents_light.jpeg" width="200"/> | <img src="screenshots/weapons.jpeg" width="200"/> | <img src="screenshots/weapons_details.jpeg" width="200"/> | <img src="screenshots/theme_switch.gif" width="200"/> |
 
 </div>
+
+---
+
+### 🖥️ Desktop (JVM)
+
+<div align="center">
+  
+| Agents Screen | Weapons Screen | Agent Details | Gun Details |
+|:-:|:-:|:-:|:-:|
+| <img src="screenshots/desktop_agents.jpeg" width="250"/> | <img src="screenshots/desktop_weapons.jpeg" width="250"/> | <img src="screenshots/desktop_agent_details.jpeg" width="250"/> | <img src="screenshots/desktop_gun_details.jpeg" width="250"/> |
+
+**Full desktop support with native window controls and responsive layouts** 💻
+
+</div>
+
+---
 
 ### 🍎 iOS Version
 
