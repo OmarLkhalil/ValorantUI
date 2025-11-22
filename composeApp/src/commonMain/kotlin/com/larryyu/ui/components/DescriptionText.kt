@@ -25,8 +25,8 @@ fun DescriptionText(
         text = text,
         style = textStyle,
         maxLines = maxLines,
-        color =color,
         overflow = TextOverflow.Ellipsis,
+        color =color,
         modifier = modifier.padding(5.dp).semantics {
             this.contentDescription = contentDescription
         },
