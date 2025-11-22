@@ -6,5 +6,6 @@ actual fun BackHandler(
     enabled: Boolean,
     onBack: () -> Unit
 ) {
+
     AndroidBackHandler(enabled = enabled, onBack = onBack)
 }
