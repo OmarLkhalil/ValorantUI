@@ -12,7 +12,7 @@ workflows:
       vars:
         XCODE_WORKSPACE: "iosApp/iosApp.xcworkspace"
         XCODE_SCHEME: "iosApp"
-      xcode: 15.2
+      xcode: latest
       cocoapods: default
 
     scripts:
