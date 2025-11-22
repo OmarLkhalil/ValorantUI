@@ -1,4 +1,4 @@
 ENABLE_USER_SCRIPT_SANDBOXING = NO
-FRAMEWORK_SEARCH_PATHS = $(SRCROOT)/../composeApp/build/bin/$(NATIVE_ARCH)-$(CONFIGURATION:lower)Framework
+FRAMEWORK_SEARCH_PATHS = $(inherited) $(SRCROOT)/../composeApp/build/bin/iosSimulatorArm64/debugFramework
 OTHER_LDFLAGS = $(inherited) -framework ComposeApp
 

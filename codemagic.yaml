@@ -34,16 +34,15 @@ workflows:
     environment:
       xcode: latest
       java: 17
-      cocoapods: default
     scripts:
-      - name: Install dependencies
+      - name: Build Kotlin Framework First
         script: |
-          cd iosApp
-          pod install
+          ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+          echo "Kotlin framework built"
       - name: Build iosApp for simulator
         script: |
           xcodebuild build \
-            -workspace iosApp/iosApp.xcworkspace \
+            -project iosApp/iosApp.xcodeproj \
             -scheme iosApp \
             -sdk iphonesimulator \
             -destination 'platform=iOS Simulator,OS=17.5,name=iPhone 15 Pro' \
