@@ -1,5 +1,4 @@
 package com.larryyu
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,19 +31,16 @@ import com.larryyu.ui.theme.ValorantUITheme
 import org.jetbrains.compose.resources.Font
 import valorantui.composeapp.generated.resources.Res
 import valorantui.composeapp.generated.resources.dryme
-
 @Composable
 fun App() {
     ValorantUITheme {
         val navController = rememberNavController()
         val navBackStackEntry = navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry.value?.destination?.route
-
         val bottomItems = listOf(
             BottomNavItem(Agents, "Agents"),
             BottomNavItem(Guns, "Guns")
         )
-
         Scaffold(
             bottomBar = {
                 AIBottomNavigation(
@@ -72,10 +68,7 @@ fun App() {
         }
     }
 }
-
-
 data class BottomNavItem(val route: Any, val title: String)
-
 @Composable
 fun AIBottomNavigation(
     items: List<BottomNavItem>,
@@ -96,7 +89,6 @@ fun AIBottomNavigation(
             items.forEach { item ->
                 val routeClass = item.route::class.qualifiedName
                 val isSelected = currentRoute?.contains(routeClass ?: "") == true
-
                 BottomNavigationItem(
                     title = item.title,
                     selected = isSelected,
@@ -106,8 +98,6 @@ fun AIBottomNavigation(
         }
     }
 }
-
-
 @Composable
 fun BottomNavigationItem(
     title: String,
@@ -129,7 +119,6 @@ fun BottomNavigationItem(
                     .background(Color.White)
             )
         }
-
         Text(
             text = title,
             modifier = Modifier.padding(top = 6.dp),

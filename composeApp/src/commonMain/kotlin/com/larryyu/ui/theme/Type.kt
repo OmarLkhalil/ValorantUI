@@ -9,78 +9,77 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import valorantui.composeapp.generated.resources.Res
-import valorantui.composeapp.generated.resources.blazed
-import valorantui.composeapp.generated.resources.dryme
+import valorantui.composeapp.generated.resources.rajdhani_bold
+import valorantui.composeapp.generated.resources.rajdhani_semibold
+import valorantui.composeapp.generated.resources.rajdhani_medium
+import valorantui.composeapp.generated.resources.rajdhani_regular
+import valorantui.composeapp.generated.resources.inter_variable
+import valorantui.composeapp.generated.resources.teko_variable
 
 @Composable
 fun welcomeTextStyle(colors: ValorantUIColors): TextStyle {
     return TextStyle(
-        fontSize = 24.sp,
-        fontFamily = FontFamily(Font(Res.font.blazed)),
-        lineHeight = 1.5.em,
+        fontSize = 28.sp,
+        fontFamily = FontFamily(Font(Res.font.rajdhani_bold)),
+        lineHeight = 1.4.em,
+        letterSpacing = 0.05.em,
         color = colors.headingText,
-        fontWeight = FontWeight.W500,
+        fontWeight = FontWeight.Bold,
     )
 }
-
 @Composable
 fun body16(colors: ValorantUIColors): TextStyle {
     return TextStyle(
         fontSize = 16.sp,
-        fontFamily = FontFamily(Font(Res.font.dryme)),
+        fontFamily = FontFamily(Font(Res.font.inter_variable)),
         color = colors.textPrimary,
-        fontWeight = FontWeight.W400,
+        fontWeight = FontWeight.Normal,
+        lineHeight = 1.5.em,
     )
 }
-
 @Composable
 fun headline20(colors: ValorantUIColors): TextStyle {
     return TextStyle(
         fontSize = 20.sp,
-        fontFamily = FontFamily(Font(Res.font.blazed)),
+        fontFamily = FontFamily(Font(Res.font.rajdhani_bold)),
         lineHeight = 1.3.em,
-        letterSpacing = 0.2.em,
+        letterSpacing = 0.05.em,
         color = colors.textPrimary,
-        fontWeight = FontWeight.W400,
+        fontWeight = FontWeight.Bold,
     )
 }
-
 @Composable
 fun headline18(colors: ValorantUIColors): TextStyle {
     return TextStyle(
         fontSize = 18.sp,
-        fontFamily = FontFamily(Font(Res.font.dryme)),
+        fontFamily = FontFamily(Font(Res.font.rajdhani_semibold)),
         lineHeight = 1.3.em,
-        letterSpacing = 0.2.em,
+        letterSpacing = 0.05.em,
         color = colors.textPrimary,
-        fontWeight = FontWeight.W400,
+        fontWeight = FontWeight.SemiBold,
     )
 }
-
 @Composable
 fun body12(colors: ValorantUIColors): TextStyle {
     return TextStyle(
         fontSize = 12.sp,
-        fontFamily = FontFamily(Font(Res.font.dryme)),
+        fontFamily = FontFamily(Font(Res.font.inter_variable)),
         color = colors.textSecondary,
-        lineHeight = 1.3.em,
-        letterSpacing = 0.2.em,
-        fontWeight = FontWeight.W400,
+        lineHeight = 1.4.em,
+        fontWeight = FontWeight.Medium,
     )
 }
-
 @Composable
 fun body8(colors: ValorantUIColors): TextStyle {
     return TextStyle(
-        fontSize = 7.sp,
-        fontFamily = FontFamily(Font(Res.font.dryme)),
+        fontSize = 9.sp,
+        fontFamily = FontFamily(Font(Res.font.teko_variable)),
         color = colors.textSecondary,
         lineHeight = 1.3.em,
-        letterSpacing = 0.2.em,
-        fontWeight = FontWeight.W400,
+        letterSpacing = 0.08.em,
+        fontWeight = FontWeight.Medium,
     )
 }
-
 @Immutable
 data class ValorantUITypography(
     val welcomeTextStyle: TextStyle,
@@ -90,7 +89,6 @@ data class ValorantUITypography(
     val body12: TextStyle,
     val body8: TextStyle,
 )
-
 @Composable
 fun provideValorantUITypography(colors: ValorantUIColors): ValorantUITypography {
     return ValorantUITypography(

@@ -1,5 +1,4 @@
 package com.larryyu.ui.view
-
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -72,24 +71,22 @@ import org.koin.compose.koinInject
 import valorantui.composeapp.generated.resources.Res
 import valorantui.composeapp.generated.resources.arrow
 import valorantui.composeapp.generated.resources.valorant
-
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentsScreen(
     viewModel: AgentsViewModel = koinInject(),
 ) {
     val agentsState by viewModel.agentsState.collectAsState()
-    val selectedAgent = remember { mutableStateOf<AgentsModel?>(null) }
-
+    var selectedAgent by remember { mutableStateOf<AgentsModel?>(null) }
     LaunchedEffect(Unit) {
         viewModel.sendIntent(AgentsIntent.FetchAgents)
     }
-
     SharedTransitionLayout {
         AnimatedContent(
-            targetState = selectedAgent.value,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            targetState = selectedAgent,
+            transitionSpec = {
+                fadeIn() togetherWith fadeOut()
+            },
             label = "agentsTransition"
         ) { targetAgent ->
             if (targetAgent == null) {
@@ -97,20 +94,19 @@ fun AgentsScreen(
                     agentsState = agentsState,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this,
-                    onAgentClick = { selectedAgent.value = it }
+                    onAgentClick = { selectedAgent = it }
                 )
             } else {
                 AgentDetailsScreen(
                     agentId = targetAgent.uuid,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this,
-                    onBack = { selectedAgent.value = null }
+                    onBack = { selectedAgent = null }
                 )
             }
         }
     }
 }
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentsGridRoute(
@@ -124,13 +120,11 @@ fun AgentsGridRoute(
     val fraction = remember { Animatable(if (isDarkTheme) 1f else 0f) }
     val scope = rememberCoroutineScope()
     var isAnimating by remember { mutableStateOf(false) }
-
     LaunchedEffect(isDarkTheme) {
         if (!isAnimating) {
             fraction.snapTo(if (isDarkTheme) 1f else 0f)
         }
     }
-
     AgentsGridContent(
         agentsState = agentsState,
         sharedTransitionScope = sharedTransitionScope,
@@ -162,8 +156,6 @@ fun AgentsGridRoute(
         }
     )
 }
-
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentsGridContent(
@@ -187,7 +179,6 @@ fun AgentsGridContent(
                     onAnimateClick = onAnimateClick
                 )
             }
-
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -216,8 +207,6 @@ fun AgentsGridContent(
         }
     }
 }
-
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun AgentsGridScaffold(
@@ -243,13 +232,11 @@ private fun AgentsGridScaffold(
                     Modifier.align(Alignment.Center),
                     color = Theme.colors.textPrimary
                 )
-
                 agentsState.error != null -> Text(
                     text = agentsState.error,
                     color = Theme.colors.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
-
                 else -> LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -268,8 +255,6 @@ private fun AgentsGridScaffold(
         }
     }
 }
-
-
 @Composable
 fun AgentsTopBar(
     onAnimateClick: () -> Unit,
@@ -280,7 +265,6 @@ fun AgentsTopBar(
             .height(60.dp)
             .padding(top = 20.dp, bottom = 3.dp)
     ) {
-
         Image(
             painter = painterResource(Res.drawable.valorant),
             contentDescription = "Valorant Logo",
@@ -289,7 +273,6 @@ fun AgentsTopBar(
                 .align(Alignment.Center),
             contentScale = ContentScale.Fit
         )
-
         Icon(
             painter = painterResource(Res.drawable.arrow),
             contentDescription = "Change Theme Icon",
@@ -302,7 +285,6 @@ fun AgentsTopBar(
         )
     }
 }
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentCard(
@@ -311,7 +293,6 @@ fun AgentCard(
     sharedTransitionScope: SharedTransitionScope,
     onItemClick: (String) -> Unit
 ) {
-
     var dominantColor by remember { mutableStateOf(Color.Gray) }
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val scale by infiniteTransition.animateFloat(
@@ -362,7 +343,6 @@ fun AgentCard(
                 .height(120.dp)
                 .width(130.dp),
         )
-
         with(sharedTransitionScope) {
             SubcomposeAsyncImage(
                 model = agent.fullPortrait,
@@ -388,7 +368,6 @@ fun AgentCard(
                     .align(Alignment.BottomCenter)
             )
         }
-
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp, bottomStart = 50.dp))
@@ -398,7 +377,6 @@ fun AgentCard(
                 .align(Alignment.BottomCenter)
                 .background(Theme.colors.surface.copy(alpha = 0.6f))
         )
-
         AgentInfo(
             agent = agent,
             modifier = Modifier
@@ -408,7 +386,6 @@ fun AgentCard(
         )
     }
 }
-
 @Composable
 fun AgentInfo(agent: AgentsModel, modifier: Modifier) {
     Column(

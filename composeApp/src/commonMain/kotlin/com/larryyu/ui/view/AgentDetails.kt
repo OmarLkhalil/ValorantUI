@@ -1,5 +1,4 @@
 package com.larryyu.ui.view
-
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -37,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -55,8 +55,6 @@ import com.larryyu.ui.components.HeaderText
 import com.larryyu.ui.components.calculateDominantColor
 import com.larryyu.ui.theme.Theme
 import org.koin.compose.koinInject
-
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentDetailsScreen(
@@ -66,17 +64,13 @@ fun AgentDetailsScreen(
     onBack: () -> Unit,
 ) {
     val viewModel: AgentDetailsViewModel = koinInject()
-
     BackHandler(onBack = onBack)
-
     LaunchedEffect(Unit) {
         viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails(agentId))
     }
-
     val surfaceColor = Theme.colors.surface
     val status by viewModel.state.collectAsState()
     var dominantColor by remember { mutableStateOf(surfaceColor) }
-
     LaunchedEffect(status.agentDetails.fullPortrait) {
         calculateDominantColor(
             source = status.agentDetails.fullPortrait.orEmpty(),
@@ -84,7 +78,6 @@ fun AgentDetailsScreen(
             dominantColor = color
         }
     }
-
     Scaffold(
         modifier = Modifier.fillMaxSize().background(dominantColor),
         topBar = {
@@ -111,7 +104,6 @@ fun AgentDetailsScreen(
         }
     }
 }
-
 @Composable
 fun AgentInfoDetailsComponent(
     agent: AgentDetailsData,
@@ -121,16 +113,15 @@ fun AgentInfoDetailsComponent(
         modifier = modifier
             .fillMaxSize(),
         contentPadding = PaddingValues(Theme.dimens.space16),
+        horizontalAlignment = CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Theme.dimens.space16)
     ) {
         item {
             AgentRoleRow(agent = agent)
         }
-
         item {
             AgentAbilitiesRow(agent = agent)
         }
-
         item {
             DescriptionText(
                 text = agent.description.orEmpty(),
@@ -139,11 +130,10 @@ fun AgentInfoDetailsComponent(
         }
     }
 }
-
 @Composable
 fun AbilityItem(ability: AbilitiesItemDetails) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = CenterHorizontally,
         modifier = Modifier.width(100.dp)
     ) {
         CoilImage(
@@ -159,7 +149,6 @@ fun AbilityItem(ability: AbilitiesItemDetails) {
         )
     }
 }
-
 @Composable
 fun AgentRoleRow(agent: AgentDetailsData) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -177,7 +166,6 @@ fun AgentRoleRow(agent: AgentDetailsData) {
         )
     }
 }
-
 @Composable
 fun AgentAbilitiesRow(agent: AgentDetailsData) {
     LazyRow {
@@ -186,8 +174,6 @@ fun AgentAbilitiesRow(agent: AgentDetailsData) {
         }
     }
 }
-
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentDetailsCardComponent(
@@ -208,7 +194,6 @@ fun AgentDetailsCardComponent(
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
-
     Box(modifier = Modifier.fillMaxSize()) {
         CoilImage(
             url = agent.background,
@@ -218,7 +203,6 @@ fun AgentDetailsCardComponent(
                 .padding(top = 50.dp)
                 .align(Alignment.TopCenter)
         )
-
         with(sharedTransitionScope) {
             CoilImage(
                 url = agent.fullPortrait,
@@ -234,7 +218,6 @@ fun AgentDetailsCardComponent(
                     .scale(scale)
             )
         }
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -250,7 +233,6 @@ fun AgentDetailsCardComponent(
                 )
                 .align(Alignment.BottomCenter)
         )
-
         AgentInfoDetailsComponent(
             agent = agent,
             modifier = Modifier.align(Alignment.BottomCenter).height(300.dp)

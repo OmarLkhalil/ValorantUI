@@ -1,24 +1,18 @@
 package com.larryyu.domain.utils
-
 object RetrofitConstants {
     const val BASE_URL = "https://valorant-api.com/v1/"
     const val TIME_OUT = 3000
 }
-
-
 object NetworkConstants {
-
     const val LANGUAGE = "Accept-Language"
     const val BEARER = "Bearer "
     const val AUTHORIZATION = "Authorization"
     const val NETWORK_TIMEOUT: Long = 600000000
     const val API_VERSION = "/api/"
-
     object Languages {
         const val ARABIC = "ar"
         const val ENGLISH = "en"
     }
-
     object RequestKeys {
         const val SUCCESS = "success"
         const val FAIL = "fail"
@@ -27,11 +21,9 @@ object NetworkConstants {
         const val BLOCKED = "blocked"
         const val EXCEPTION = "exception"
     }
-
     object NetworkParams {
         const val METHOD = "_method"
         const val PATCH = "patch"
-
         const val COUNTRY_CODE = "country_code"
         const val COUNTRY_CODE_VALUE = "00966"
         const val PHONE = "phone"
@@ -52,7 +44,6 @@ object NetworkConstants {
         const val ADDRESS = "address"
         const val PAGE = "page"
     }
-
     object EndPoints {
         const val LOGIN = "sign-in"
         const val FORGET = "forget-password"
@@ -60,7 +51,6 @@ object NetworkConstants {
         const val RESEND_CODE = "resend-code"
         const val REGISTER = "sign-up"
     }
-
     object FailRequestCode {
         const val FAIL = 400
         const val UN_AUTH = 419
@@ -70,5 +60,4 @@ object NetworkConstants {
         const val EXCEPTION = 500
         const val FORBIDDEN = 403
     }
-
 }

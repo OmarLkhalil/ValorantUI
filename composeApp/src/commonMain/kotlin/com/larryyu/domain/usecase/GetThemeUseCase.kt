@@ -1,7 +1,5 @@
 package com.larryyu.domain.usecase
-
 import com.larryyu.domain.repository.PreferencesRepo
-
 class GetThemeUseCase(
     private val themeRepository: PreferencesRepo
 ) {

@@ -1,5 +1,4 @@
 package com.larryyu.valorantui
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,8 +10,6 @@ import com.larryyu.utils.initDataStore
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.logger.Level
-
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +23,6 @@ class MainActivity : ComponentActivity() {
             ValorantUITheme {
                 App()
             }
-
         }
     }
 }

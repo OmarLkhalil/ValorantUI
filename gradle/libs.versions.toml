@@ -97,6 +97,10 @@ kotlinx_coroutines_test_v = "1.10.2"
 turbine_v = "1.2.1"
 mockito_core_v = "5.20.0"
 mockito_kotlin_v = "6.1.0"
+androidTestRunner = "1.5.2"
+androidTestRules = "1.5.0"
+androidTestExtJunit = "1.1.5"
+composeUiTest = "1.5.4"
 
 # Misc / Tooling
 ksp = "2.3.0"
@@ -210,6 +214,13 @@ kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.re
 androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
 androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
 
+# Testing Libraries
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidTestExtJunit" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidTestRunner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidTestRules" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "composeUiTest" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "composeUiTest" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -227,4 +238,3 @@ sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 ksp = { id = 'com.google.devtools.ksp', version.ref = 'ksp' }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
-

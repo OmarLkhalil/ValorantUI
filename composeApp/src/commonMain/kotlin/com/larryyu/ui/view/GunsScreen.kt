@@ -1,6 +1,13 @@
 package com.larryyu.ui.view
-
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +41,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,47 +57,73 @@ import coil3.compose.SubcomposeAsyncImage
 import com.larryyu.domain.model.BundlesData
 import com.larryyu.domain.model.GunsData
 import com.larryyu.presentation.uistates.GunsIntent
+import com.larryyu.presentation.uistates.GunsState
 import com.larryyu.presentation.viewmodel.GunsViewModel
 import com.larryyu.ui.components.CoilImage
 import com.larryyu.ui.theme.Theme
+import com.larryyu.ui.view.gundetails.GunDetailsScreen
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import valorantui.composeapp.generated.resources.Res
 import valorantui.composeapp.generated.resources.arrow
 import valorantui.composeapp.generated.resources.valorant
-
-
-/**
- * Main GunsScreen - State Holder
- * All states are managed here at the parent level
- */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun GunsScreen(
     gunsViewModel: GunsViewModel = koinInject(),
     onThemeToggle: () -> Unit = {}
 ) {
-    // Fetch data on first composition
     LaunchedEffect(Unit) {
         gunsViewModel.sendIntent(GunsIntent.FetchGuns)
     }
-
-    // Collect state properly
     val gunsState by gunsViewModel.gState.collectAsState()
+    var selectedGun by remember { mutableStateOf<GunsData?>(null) }
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = selectedGun,
+            transitionSpec = {
+                fadeIn() togetherWith fadeOut()
+            },
+            label = "gunsTransition"
+        ) { targetGun ->
+            if (targetGun == null) {
+                GunsGridRoute(
+                    gunsState = gunsState,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                    onThemeToggle = onThemeToggle,
+                    onGunClick = { gun -> selectedGun = gun }
+                )
+            } else {
+                GunDetailsScreen(
+                    gun = targetGun,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                    onBack = { selectedGun = null }
+                )
+            }
+        }
+    }
+}
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun GunsGridRoute(
+    gunsState: GunsState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onThemeToggle: () -> Unit,
+    onGunClick: (GunsData) -> Unit
+) {
     val guns = gunsState.guns
     val bundles = gunsState.bundles
-
-    // Pager and scroll states
     val bundlesPagerState = rememberPagerState(
         pageCount = { bundles.size },
         initialPage = 0
     )
     val indicatorScrollState = rememberLazyListState()
-
-    // Auto-scroll effect for bundles pager
     LaunchedEffect(bundlesPagerState.pageCount) {
         if (bundlesPagerState.pageCount == 0) return@LaunchedEffect
-
         snapshotFlow { bundlesPagerState.currentPage }.collect { page ->
             delay(2500)
             val nextPage = if (page >= bundlesPagerState.pageCount - 1) {
@@ -98,18 +134,13 @@ fun GunsScreen(
             bundlesPagerState.animateScrollToPage(nextPage)
         }
     }
-
-    // Sync indicator scroll with pager
     LaunchedEffect(bundlesPagerState.currentPage) {
         if (bundlesPagerState.pageCount == 0) return@LaunchedEffect
-
         val currentPage = bundlesPagerState.currentPage
         val visibleItems = indicatorScrollState.layoutInfo.visibleItemsInfo
         if (visibleItems.isEmpty()) return@LaunchedEffect
-
         val lastVisibleIndex = visibleItems.last().index
         val firstVisibleIndex = visibleItems.first().index
-
         when {
             currentPage > lastVisibleIndex - 1 -> {
                 indicatorScrollState.animateScrollToItem((currentPage - 2).coerceAtLeast(0))
@@ -119,7 +150,6 @@ fun GunsScreen(
             }
         }
     }
-
     GunsScreenContent(
         guns = guns,
         bundles = bundles,
@@ -127,13 +157,13 @@ fun GunsScreen(
         error = gunsState.error,
         bundlesPagerState = bundlesPagerState,
         indicatorScrollState = indicatorScrollState,
-        onThemeToggle = onThemeToggle
+        sharedTransitionScope = sharedTransitionScope,
+        animatedVisibilityScope = animatedVisibilityScope,
+        onThemeToggle = onThemeToggle,
+        onGunClick = onGunClick
     )
 }
-
-/**
- * GunsScreen Content - Stateless UI
- */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun GunsScreenContent(
     guns: List<GunsData>,
@@ -142,7 +172,10 @@ private fun GunsScreenContent(
     error: String?,
     bundlesPagerState: PagerState,
     indicatorScrollState: androidx.compose.foundation.lazy.LazyListState,
-    onThemeToggle: () -> Unit
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onThemeToggle: () -> Unit,
+    onGunClick: (GunsData) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -157,15 +190,12 @@ private fun GunsScreenContent(
                 .padding(paddingValues)
         ) {
             when {
-                // Loading State
                 isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
                         color = Theme.colors.textPrimary
                     )
                 }
-
-                // Error State
                 error != null -> {
                     Text(
                         text = error,
@@ -177,22 +207,17 @@ private fun GunsScreenContent(
                         textAlign = TextAlign.Center
                     )
                 }
-
-                // Content State
                 else -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Featured Bundles Section
                         if (bundles.isNotEmpty()) {
                             SectionHeader(
                                 title = "Featured Bundles",
-                                onSeeAllClick = { /* TODO: Navigate to all bundles */ }
+                                onSeeAllClick = {  }
                             )
-
                             Spacer(modifier = Modifier.height(12.dp))
-
                             BundlesPager(
                                 bundles = bundles,
                                 pagerState = bundlesPagerState,
@@ -200,33 +225,26 @@ private fun GunsScreenContent(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
                             )
-
                             Spacer(modifier = Modifier.height(12.dp))
-
                             PagerIndicator(
                                 pagerState = bundlesPagerState,
                                 indicatorScrollState = indicatorScrollState
                             )
-
                             Spacer(modifier = Modifier.height(24.dp))
                         }
-
-                        // Featured Guns Section
                         if (guns.isNotEmpty()) {
                             SectionHeader(
                                 title = "Featured Guns",
-                                onSeeAllClick = { /* TODO: Navigate to all guns */ }
+                                onSeeAllClick = {  }
                             )
-
                             Spacer(modifier = Modifier.height(12.dp))
-
                             GunsGrid(
                                 guns = guns,
-                                onGunClick = { /* TODO: Navigate to gun details */ }
+                                sharedTransitionScope = sharedTransitionScope,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                onGunClick = onGunClick
                             )
                         }
-
-                        // Empty State
                         if (guns.isEmpty() && bundles.isEmpty()) {
                             Text(
                                 text = "No data available",
@@ -243,10 +261,6 @@ private fun GunsScreenContent(
         }
     }
 }
-
-/**
- * GunsScreen TopBar - Stateless Component
- */
 @Composable
 private fun GunsTopBar(
     onThemeToggle: () -> Unit
@@ -265,7 +279,6 @@ private fun GunsTopBar(
                 .align(Alignment.Center),
             contentScale = ContentScale.Fit
         )
-
         Icon(
             painter = painterResource(Res.drawable.arrow),
             contentDescription = "Toggle Theme",
@@ -278,10 +291,6 @@ private fun GunsTopBar(
         )
     }
 }
-
-/**
- * Section Header - Reusable Component
- */
 @Composable
 private fun SectionHeader(
     title: String,
@@ -301,7 +310,6 @@ private fun SectionHeader(
             style = Theme.typography.headline18,
             fontWeight = FontWeight.Bold
         )
-
         Text(
             text = "See all",
             color = Theme.colors.textSecondary,
@@ -311,11 +319,6 @@ private fun SectionHeader(
         )
     }
 }
-
-
-/**
- * Bundles Pager - Stateless Component
- */
 @Composable
 private fun BundlesPager(
     bundles: List<BundlesData>,
@@ -331,10 +334,6 @@ private fun BundlesPager(
         )
     }
 }
-
-/**
- * Pager Indicator - Stateless Component
- */
 @Composable
 private fun PagerIndicator(
     pagerState: PagerState,
@@ -356,7 +355,6 @@ private fun PagerIndicator(
                 label = "indicator_size"
             )
             val color = if (isSelected) Theme.colors.textPrimary else Theme.colors.textSecondary
-
             Box(
                 modifier = Modifier
                     .size(size)
@@ -366,10 +364,6 @@ private fun PagerIndicator(
         }
     }
 }
-
-/**
- * Bundle Card - Stateless Component
- */
 @Composable
 private fun BundleCard(
     bundle: BundlesData,
@@ -399,15 +393,11 @@ private fun BundleCard(
                 }
             }
         )
-
-        // Gradient overlay
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(0.3f))
         )
-
-        // Bundle info
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -421,7 +411,6 @@ private fun BundleCard(
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold
             )
-
             if (!bundle.displayNameSubText.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -434,87 +423,94 @@ private fun BundleCard(
         }
     }
 }
-
-/**
- * Guns Grid - Stateless Component
- */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun GunsGrid(
     guns: List<GunsData>,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onGunClick: (GunsData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier.fillMaxSize()
     ) {
-        items(guns) { gun ->
+        items(guns, key = { it.uuid ?: it.displayName ?: "" }) { gun ->
             GunCard(
                 gun = gun,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
                 onClick = { onGunClick(gun) }
             )
         }
     }
 }
-
-/**
- * Gun Card - Stateless Component
- */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun GunCard(
     gun: GunsData,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(Theme.colors.surface)
-            .height(140.dp)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(12.dp)
+    with(sharedTransitionScope) {
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(12.dp))
+                .background(Theme.colors.surface)
+                .height(140.dp)
+                .clickable { onClick() },
+            contentAlignment = Alignment.Center
         ) {
-            // Gun Image
-            SubcomposeAsyncImage(
-                model = gun.displayIcon,
-                contentDescription = gun.displayName,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp),
-                contentScale = ContentScale.Fit,
-                loading = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = Theme.colors.textPrimary,
-                            modifier = Modifier.size(30.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(12.dp)
+            ) {
+                SubcomposeAsyncImage(
+                    model = gun.displayIcon,
+                    contentDescription = gun.displayName,
+                    modifier = Modifier
+                        .sharedElement(
+                            rememberSharedContentState(key = "gun-image-${gun.uuid}"),
+                            animatedVisibilityScope = animatedVisibilityScope
                         )
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    contentScale = ContentScale.Fit,
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = Theme.colors.textPrimary,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
                     }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Gun Name
-            Text(
-                text = gun.displayName ?: "Unknown Gun",
-                color = Theme.colors.textPrimary,
-                style = Theme.typography.body12,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                modifier = Modifier.fillMaxWidth()
-            )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = gun.displayName ?: "Unknown Gun",
+                    color = Theme.colors.textPrimary,
+                    style = Theme.typography.body12,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    modifier = Modifier
+                        .sharedElement(
+                            rememberSharedContentState(key = "gun-name-${gun.uuid}"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .fillMaxWidth()
+                )
+            }
         }
     }
 }

@@ -1,10 +1,7 @@
 package com.larryyu.ui.theme
-
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
-
 @Immutable
 data class ValorantUIDimens(
     val space1 : Dp = 1.dp,

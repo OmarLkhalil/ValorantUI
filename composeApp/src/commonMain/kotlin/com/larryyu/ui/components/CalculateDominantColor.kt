@@ -1,11 +1,8 @@
 package com.larryyu.ui.components
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import com.larryyu.domain.model.AgentDetailsData
-
-
 fun calculateDominantColor(
     source: String,
     onCalculated: (Color) -> Unit
@@ -20,4 +17,3 @@ fun calculateDominantColor(
     val b = sums[2] / 255f
     onCalculated(Color(r, g, b))
 }
-

@@ -1,5 +1,4 @@
 package com.larryyu.di
-
 import com.larryyu.domain.utils.RetrofitConstants
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -17,12 +16,9 @@ import io.ktor.serialization.kotlinx.KotlinxSerializationConverter
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAbsent
 import kotlinx.serialization.json.Json
-
 object NetworkModule {
-
     fun provideKtorClient(enableNetworkLogs: Boolean = true): HttpClient {
         return HttpClient {
-            // 🌐 الإعدادات الأساسية للطلب
             install(DefaultRequest) {
                 headers {
                     appendIfNameAbsent(
@@ -31,13 +27,9 @@ object NetworkModule {
                     )
                 }
             }
-
-            // 🔁 إعادة المحاولة عند حدوث أخطاء في السيرفر
             install(HttpRequestRetry) {
                 retryOnServerErrors(maxRetries = 2)
             }
-
-            // 🧩 تهيئة JSON serialization
             install(ContentNegotiation) {
                 val json = Json {
                     ignoreUnknownKeys = true
@@ -47,8 +39,6 @@ object NetworkModule {
                 json(json)
                 register(ContentType.Text.Plain, KotlinxSerializationConverter(json))
             }
-
-            // 🧠 اللوجات الخاصة بالـ network (اختياري)
             if (enableNetworkLogs) {
                 install(Logging) {
                     level = LogLevel.ALL

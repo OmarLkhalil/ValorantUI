@@ -1,5 +1,4 @@
 package com.larryyu.presentation.viewmodel
-
 import com.larryyu.domain.repository.AgentsRepo
 import com.larryyu.domain.utils.DataState
 import com.larryyu.presentation.uistates.AgentsIntent
@@ -14,28 +13,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-
 class AgentsViewModel(
     private val agentsRepo: AgentsRepo
 ) : KoinComponent {
-
     private val _agentsState = MutableStateFlow(AgentsUIState())
     val agentsState: StateFlow<AgentsUIState> = _agentsState
-
     private val viewModelScope = CoroutineScope(Dispatchers.Default)
-
     private val intentState = MutableSharedFlow<AgentsIntent>()
-
     init {
         processIntents()
     }
-
     fun sendIntent(intent: AgentsIntent) {
         viewModelScope.launch {
             intentState.emit(intent)
         }
     }
-
     private fun processIntents() {
         viewModelScope.launch {
             intentState.collect { agentIntent ->
@@ -43,7 +35,6 @@ class AgentsViewModel(
                     AgentsIntent.FetchAgents, AgentsIntent.RefreshAgents -> {
                         loadAgents()
                     }
-
                     is AgentsIntent.OpenDetails -> {
                         navigateToDetails(agentIntent.agentId)
                     }
@@ -51,7 +42,6 @@ class AgentsViewModel(
             }
         }
     }
-
     private val _navigationEvent = EventFlow<String>()
     val navigationEvent = _navigationEvent.events
     fun navigateToDetails(agentId: String) {
@@ -59,7 +49,6 @@ class AgentsViewModel(
             _navigationEvent.emit(agentId)
         }
     }
-
     private fun loadAgents() = launchAgentsViewModelScope {
         agentsRepo.getAgents().collect { result ->
             when (result) {
@@ -88,7 +77,6 @@ class AgentsViewModel(
             }
         }
     }
-
     private fun launchAgentsViewModelScope(block: suspend CoroutineScope.() -> Unit) {
         viewModelScope.launch {
             try {
@@ -103,12 +91,7 @@ class AgentsViewModel(
             }
         }
     }
-
     private suspend fun updateAgentsUiState(uiState: AgentsUIState) {
         _agentsState.emit(uiState)
     }
-
-
-//
-
 }

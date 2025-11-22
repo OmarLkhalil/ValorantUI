@@ -1,5 +1,4 @@
 package com.larryyu.ui.components
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -12,14 +11,12 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import com.larryyu.ui.theme.Theme
-
-
 @Composable
 fun CoilImage(
     url: Any?,
     contentDescription: String,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop,
+    contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
 ) {
     SubcomposeAsyncImage(

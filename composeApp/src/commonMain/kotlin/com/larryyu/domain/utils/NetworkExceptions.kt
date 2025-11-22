@@ -1,5 +1,4 @@
 package com.larryyu.domain.utils
-
 sealed class NetworkExceptions : Exception() {
     data object UnknownException : NetworkExceptions()
     data object ServerException : NetworkExceptions()

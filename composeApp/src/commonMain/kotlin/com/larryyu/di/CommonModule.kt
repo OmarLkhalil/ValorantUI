@@ -1,5 +1,4 @@
 package com.larryyu.di
-
 import com.larryyu.data.datasource.AgentsDataSource
 import com.larryyu.data.datasource.AgentsDataSourceImpl
 import com.larryyu.data.datasource.AgentsEndPoint
@@ -27,56 +26,28 @@ import com.larryyu.utils.createDataStore
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
-
-
 fun commonModule(enableNetworkLogs: Boolean = false) = module {
-
-    // ✅ Ktor client
     single {
         NetworkModule.provideKtorClient(enableNetworkLogs = enableNetworkLogs)
     }
-
-    // ✅ Valorant API
     single { AgentsEndPoint(get()) }
     single { WeaponsEndPoint(get()) }
-
-    // ✅ DataSource
     single<AgentsDataSource> { AgentsDataSourceImpl(get()) }
-
-    // ✅ Database
     single { ValorantDatabase(get()) }
-
-    // ✅ Repository
     single<AgentsRepo> { AgentsRepoImpl(get(), get()) }
     single<GunsRepo> { GunsRepoImpl(get(), get()) }
-
-    // ✅ UseCases
     single<AgentsUseCase> { AgentsUseCaseImpl(get()) }
     factory { AgentDetailsUseCase(get()) }
     factory { GetAllBundlesUseCase(get()) }
     factory { GetAllGunsUseCase(get()) }
-
-    // ✅ ViewModels
     singleOf(::AgentsViewModel)
     singleOf(::AgentDetailsViewModel)
     singleOf(::GunsViewModel)
-
-
-    // DataStore (provided by platformModule)
     single { createDataStore() }
-
-    // Theme DataSource / Repository
     single { ThemeDataStore(get()) }
     single<PreferencesRepo> { PreferencesRepoimpl(get()) }
-
-    // UseCases
     factory { GetThemeUseCase(get()) }
     factory { SetThemeUseCase(get()) }
-
-    // ViewModel
     singleOf(::ThemeViewModel)
 }
-
-
-// 👇 expect function for platform module (Android / iOS)
 expect fun platformModule(): Module

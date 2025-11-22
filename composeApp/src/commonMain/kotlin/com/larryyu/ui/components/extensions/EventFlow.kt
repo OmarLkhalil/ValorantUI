@@ -1,9 +1,7 @@
 package com.larryyu.ui.components.extensions
-
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-
 class EventFlow<T> {
     private val _events = MutableSharedFlow<T>(
         replay = 0,
@@ -11,9 +9,7 @@ class EventFlow<T> {
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val events = _events.asSharedFlow()
-
     fun emit(value: T) {
         _events.tryEmit(value)
     }
 }
-

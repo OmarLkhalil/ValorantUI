@@ -126,6 +126,16 @@ kotlin {
                 implementation(libs.sdp.compose)
         }
 
+        // Android Testing dependencies
+        androidInstrumentedTest.dependencies {
+            implementation(libs.androidx.test.ext.junit)
+            implementation(libs.androidx.test.runner)
+            implementation(libs.androidx.test.rules)
+            implementation(libs.androidx.espresso.core)
+            implementation(libs.androidx.compose.ui.test.junit4)
+            implementation(libs.androidx.compose.ui.test.manifest)
+        }
+
         // iOS-only dependencies
 //        val iosMain by getting {
 //            dependencies {
@@ -171,6 +181,7 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     packaging {

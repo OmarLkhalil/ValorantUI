@@ -1,11 +1,6 @@
 package com.larryyu.ui.components
-
 import androidx.compose.runtime.Composable
 import androidx.activity.compose.BackHandler as AndroidBackHandler
-
-/**
- * Android implementation of BackHandler using androidx.activity.compose.BackHandler
- */
 @Composable
 actual fun BackHandler(
     enabled: Boolean,
@@ -13,4 +8,3 @@ actual fun BackHandler(
 ) {
     AndroidBackHandler(enabled = enabled, onBack = onBack)
 }
-
