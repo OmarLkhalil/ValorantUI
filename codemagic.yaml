@@ -35,10 +35,15 @@ workflows:
       xcode: latest
       java: 17
     scripts:
+      - name: Make gradlew executable
+        script: |
+          chmod +x gradlew
+
       - name: Build Kotlin Framework First
         script: |
           ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
           echo "Kotlin framework built"
+
       - name: Build iosApp for simulator
         script: |
           xcodebuild build \
