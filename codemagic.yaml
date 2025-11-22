@@ -1,4 +1,4 @@
-# 🍎 Codemagic CI/CD for iOS - ValorantUI (Simplified)
+# Codemagic CI/CD for iOS - ValorantUI (Simplified)
 # Build XCFramework only - No complex Xcode project
 
 workflows:
@@ -23,14 +23,14 @@ workflows:
         script: |
           set -e
           cd $CM_BUILD_DIR
-          echo "🔨 Building Kotlin Multiplatform iOS Frameworks..."
+          echo "Building Kotlin Multiplatform iOS Frameworks..."
           
           ./gradlew :composeApp:linkDebugFrameworkIosArm64 \
             :composeApp:linkDebugFrameworkIosX64 \
             :composeApp:linkDebugFrameworkIosSimulatorArm64 \
             --stacktrace --no-daemon
           
-          echo "✅ Frameworks built successfully"
+          echo "Frameworks built successfully"
 
       - name: Archive Artifacts
         script: |
@@ -38,28 +38,26 @@ workflows:
           
           if [ -d "composeApp/build/bin" ]; then
             cp -R composeApp/build/bin/* artifacts/frameworks/
-            echo "✅ Frameworks archived"
+            echo "Frameworks archived"
           fi
           
           # Build report
-          cat > artifacts/README.md << 'EOF'
-# ValorantUI - iOS XCFramework Build
-
-✅ **Build Status:** Success
-📦 **Artifacts:** iOS Frameworks ready for integration
-📅 **Build Date:** $(date)
-🔗 **Commit:** $CM_COMMIT
-
-## 📲 Next Steps
-
-1. Download XCFramework artifacts
-2. Create your iOS Xcode project
-3. Link against ComposeApp framework
-4. Build your iOS app
-
-## 📚 Documentation
-See: docs/IOS_CICD_GUIDE.md
-EOF
+          cat > artifacts/README.txt << 'EOF'
+          ValorantUI - iOS XCFramework Build
+          
+          Build Status: Success
+          Artifacts: iOS Frameworks ready for integration
+          Build Date: Built successfully
+          Commit: See Codemagic dashboard
+          
+          Next Steps:
+          1. Download XCFramework artifacts
+          2. Create your iOS Xcode project
+          3. Link against ComposeApp framework
+          4. Build your iOS app
+          
+          Documentation: See docs/IOS_CICD_GUIDE.md
+          EOF
 
     artifacts:
       - artifacts/**/*
