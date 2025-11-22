@@ -113,14 +113,20 @@ jobs:
         run: ./gradlew test --stacktrace --no-daemon
         continue-on-error: true
 
+      - name: List Test Results (Debug)
+        if: always()
+        run: |
+          echo "🔍 Searching for test result files..."
+          find . -path "*/test-results/*/*.xml" -type f | head -20 || echo "No test results found"
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         continue-on-error: true
         with:
           files: |
-            **/build/test-results/test*/**/*.xml
-            **/build/test-results/testDebugUnitTest/**/*.xml
+            **/build/test-results/**/*.xml
+            **/test-results/**/*.xml
           check_name: 'Test Results'
 
       - name: Run Lint
@@ -139,11 +145,23 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease --stacktrace --no-daemon
 
+      - name: List APK files (Debug)
+        run: |
+          echo "🔍 Searching for APK files..."
+          find . -name "*.apk" -type f | grep -v "build/intermediates" | grep -v "unaligned" || echo "No APK found"
+          echo ""
+          echo "📁 Checking common locations:"
+          ls -la app/release/*.apk 2>/dev/null || echo "  ❌ app/release/ not found"
+          ls -la app/build/outputs/apk/release/*.apk 2>/dev/null || echo "  ❌ app/build/outputs/apk/release/ not found"
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: app/build/outputs/apk/release/app-release.apk
+          path: |
+            app/release/*.apk
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
   # ==========================================
@@ -165,13 +183,28 @@ jobs:
           name: app-release
           path: ./app-release
 
+      - name: Find APK file
+        id: find-apk
+        run: |
+          APK_FILE=$(find ./app-release -name "*.apk" -type f | grep -i release | head -1)
+          if [ -z "$APK_FILE" ]; then
+            echo "❌ No release APK found, trying debug..."
+            APK_FILE=$(find ./app-release -name "*.apk" -type f | head -1)
+          fi
+          if [ -z "$APK_FILE" ]; then
+            echo "❌ No APK file found!"
+            exit 1
+          fi
+          echo "✅ Found APK: $APK_FILE"
+          echo "apk_path=$APK_FILE" >> $GITHUB_OUTPUT
+
       - name: Deploy to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           groups: internal-testers
-          file: ./app-release/app-release.apk
+          file: ${{ steps.find-apk.outputs.apk_path }}
           releaseNotes: |
             🚀 Automated Build from CI/CD
             
