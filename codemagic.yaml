@@ -1,0 +1,76 @@
+# 🍎 Codemagic CI/CD for iOS - ValorantUI
+
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    integrations:
+      app_store_connect: ValorantUI
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.larryyu.valorantui
+      vars:
+        XCODE_WORKSPACE: "iosApp/iosApp.xcworkspace"
+        XCODE_SCHEME: "iosApp"
+      xcode: 15.2
+      cocoapods: default
+
+    scripts:
+      - name: Set up keychain
+        script: |
+          keychain initialize
+
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files \
+            "com.larryyu.valorantui" \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+
+      - name: Install dependencies
+        script: |
+          cd composeApp
+          ./gradlew :composeApp:assembleXCFramework
+
+      - name: Build ipa for distribution
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+      - name: Take Screenshots
+        script: |
+          # Run UI tests for screenshots
+          xcodebuild test \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+            -derivedDataPath screenshots
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - screenshots/**/*.png
+
+    publishing:
+      email:
+        recipients:
+          - omarkkhalil12@gmail.com
+        notify:
+          success: true
+          failure: true
+
+      app_store_connect:
+        auth: integration
+
+        # Optional: Submit to TestFlight
+        submit_to_testflight: true
+
+        # Optional: Submit to App Store
+        # submit_to_app_store: false
+
