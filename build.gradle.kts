@@ -13,4 +13,10 @@ plugins {
     alias(libs.plugins.kotlinX.serialization.plugin) apply false
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
     alias(libs.plugins.android.lint) apply false
+
+    // Firebase Plugins
+    alias(libs.plugins.googleServices) apply false
+    alias(libs.plugins.firebaseCrashlytics) apply false
+    alias(libs.plugins.firebaseAppdistribution) apply false
+    alias(libs.plugins.firebasePerf) apply false
 }

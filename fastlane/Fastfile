@@ -1,0 +1,178 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+
+  # ===================================
+  # Lane: Build Debug APK
+  # ===================================
+  desc "Build Debug APK"
+  lane :build_debug do
+    gradle(
+      task: "clean assembleDebug",
+      project_dir: "./"
+    )
+  end
+
+  # ===================================
+  # Lane: Build Release APK
+  # ===================================
+  desc "Build Release APK"
+  lane :build_release do
+    gradle(
+      task: "clean assembleRelease",
+      project_dir: "./"
+    )
+  end
+
+  # ===================================
+  # Lane: Run Unit Tests
+  # ===================================
+  desc "Run all unit tests"
+  lane :test do
+    gradle(
+      task: "test",
+      project_dir: "./"
+    )
+  end
+
+  # ===================================
+  # Lane: Run Lint
+  # ===================================
+  desc "Run lint checks"
+  lane :lint do
+    gradle(
+      task: "lint",
+      project_dir: "./"
+    )
+  end
+
+  # ===================================
+  # Lane: Take Screenshots (Screengrab)
+  # ===================================
+  desc "Take automated screenshots"
+  lane :screenshots do
+    # Build the debug and test APK
+    gradle(
+      task: "assembleDebug assembleDebugAndroidTest",
+      project_dir: "./"
+    )
+
+    # Run screengrab to capture screenshots
+    screengrab(
+      locales: ["en-US"],
+      clear_previous_screenshots: true,
+      app_package_name: "com.larryyu.valorantui",
+      tests_package_name: "com.larryyu.valorantui.test",
+      use_tests_in_packages: ["com.larryyu.valorantui.screenshots"],
+      app_apk_path: "app/build/outputs/apk/debug/app-debug.apk",
+      tests_apk_path: "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    )
+  end
+
+  # ===================================
+  # Lane: Distribute to Firebase
+  # ===================================
+  desc "Deploy to Firebase App Distribution"
+  lane :distribute_firebase do |options|
+    # Build the release APK
+    gradle(
+      task: "clean assembleRelease",
+      project_dir: "./"
+    )
+
+    # Upload to Firebase App Distribution
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+      release_notes: options[:release_notes] || "New build from CI/CD",
+      groups: "internal-testers",
+      apk_path: "app/build/outputs/apk/release/app-release.apk"
+    )
+  end
+
+  # ===================================
+  # Lane: Full CI/CD Pipeline
+  # ===================================
+  desc "Full CI/CD Pipeline: Build, Test, Lint, Screenshots, Distribute"
+  lane :ci do |options|
+    # Step 1: Build Debug
+    UI.message("🔨 Building Debug APK...")
+    build_debug
+
+    # Step 2: Run Tests
+    UI.message("🧪 Running Unit Tests...")
+    test
+
+    # Step 3: Run Lint
+    UI.message("🔍 Running Lint Checks...")
+    lint
+
+    # Step 4: Take Screenshots (optional - can be skipped if no UI tests)
+    if options[:skip_screenshots]
+      UI.message("⏭️  Skipping Screenshots...")
+    else
+      UI.message("📸 Taking Screenshots...")
+      begin
+        screenshots
+      rescue => ex
+        UI.error("Screenshots failed: #{ex}")
+        UI.important("Continuing pipeline without screenshots...")
+      end
+    end
+
+    # Step 5: Build Release & Distribute
+    UI.message("🚀 Distributing to Firebase...")
+    distribute_firebase(
+      release_notes: options[:release_notes] || "Automated CI/CD Build - #{Time.now.strftime('%Y-%m-%d %H:%M')}"
+    )
+
+    UI.success("✅ CI/CD Pipeline Completed Successfully! 🎉")
+  end
+
+  # ===================================
+  # Lane: Quick Build and Distribute (No Tests)
+  # ===================================
+  desc "Quick Build and Distribute (Skip Tests)"
+  lane :quick_deploy do |options|
+    UI.message("🚀 Quick Deploy: Building and Distributing...")
+
+    gradle(
+      task: "clean assembleRelease",
+      project_dir: "./"
+    )
+
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+      release_notes: options[:release_notes] || "Quick Deploy - #{Time.now.strftime('%Y-%m-%d %H:%M')}",
+      groups: "internal-testers",
+      apk_path: "app/build/outputs/apk/release/app-release.apk"
+    )
+
+    UI.success("✅ Quick Deploy Completed!")
+  end
+
+  # ===================================
+  # Error Handling
+  # ===================================
+  error do |lane, exception|
+    UI.error("❌ Lane #{lane} failed with exception: #{exception}")
+  end
+
+end
+

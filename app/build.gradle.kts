@@ -3,6 +3,12 @@ plugins {
     alias(libs.plugins.android.kotlin)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
+
+    // Firebase Plugins - للـ CI/CD
+    alias(libs.plugins.googleServices)
+    // alias(libs.plugins.firebaseCrashlytics)  // Optional - enable when needed
+    alias(libs.plugins.firebaseAppdistribution)
+    // alias(libs.plugins.firebasePerf)  // Optional - enable when needed
 }
 
 android {
@@ -87,7 +93,12 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.koin.android)
 
-
+    // Firebase - للـ CI/CD و App Distribution
+    // BOM سيتم تفعيله بعد setup Firebase بشكل كامل
+    // implementation(platform(libs.firebaseBom))
+    // implementation(libs.firebaseAnalytics)
+    // implementation(libs.firebaseCrashlyticsKtx)
+    // implementation(libs.firebasePerfKtx)
 
     implementation(project(":composeApp"))
 

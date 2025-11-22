@@ -59,7 +59,15 @@ kotlinx_serialization_json_v = "1.9.0"
 
 # Firebase / Browser
 browser_v = "1.9.0"
+firebase_bom = "34.6.0"
+firebase_crashlytics = "19.2.1"
+firebase_analytics = "22.1.2"
+firebase_perf = "21.0.2"
 firebase_firestore_v = "25.1.4"
+google_services = "4.4.4"
+firebase_crashlytics_gradle = "3.0.6"
+firebase_appdistribution = "5.2.0"
+firebase_perf_plugin = "1.4.2"
 
 # Hilt / DI
 hilt_v = "2.57.2"
@@ -202,6 +210,14 @@ androidx-browser = { group = "androidx.browser", name = "browser", version.ref =
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebase_firestore_v" }
 androidx-compose-material-icons-extended-android = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material_icons_extended_v" }
 
+# Firebase BOM & Services
+firebaseBom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase_bom" }
+firebaseAnalytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
+firebaseCrashlyticsKtx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebasePerfKtx = { group = "com.google.firebase", name = "firebase-perf-ktx" }
+firebaseMessaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+firebaseConfig = { group = "com.google.firebase", name = "firebase-config-ktx" }
+
 preCompose = { module = "moe.tlaster:precompose", version.ref = "preCompose" }
 preCompose-viewmodel = { module = "moe.tlaster:precompose-viewmodel", version.ref = "preCompose" }
 # Koin libs
@@ -238,3 +254,10 @@ sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 ksp = { id = 'com.google.devtools.ksp', version.ref = 'ksp' }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
+
+# Firebase Plugins
+googleServices = { id = "com.google.gms.google-services", version.ref = "google_services" }
+firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase_crashlytics_gradle" }
+firebaseAppdistribution = { id = "com.google.firebase.appdistribution", version.ref = "firebase_appdistribution" }
+firebasePerf = { id = "com.google.firebase.firebase-perf", version.ref = "firebase_perf_plugin" }
+

@@ -1,0 +1,247 @@
+# Azure DevOps Pipeline for ValorantUI Android App
+# CI/CD Pipeline: Build → Test → Lint → Screenshots → Distribute to Firebase
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - feature/*
+  paths:
+    exclude:
+      - README.md
+      - docs/*
+      - screenshots/*
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: 'macos-latest'  # macOS للـ Android builds
+
+variables:
+  - group: firebase-credentials  # Variable group في Azure DevOps
+  - name: GRADLE_USER_HOME
+    value: $(Pipeline.Workspace)/.gradle
+
+stages:
+  # ==========================================
+  # Stage 1: Build & Test
+  # ==========================================
+  - stage: BuildAndTest
+    displayName: 'Build and Test'
+    jobs:
+      - job: Build
+        displayName: 'Build APK & Run Tests'
+        steps:
+          # Checkout Repository
+          - checkout: self
+            fetchDepth: 1
+
+          # Setup Java
+          - task: JavaToolInstaller@0
+            displayName: 'Setup Java 17'
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          # Cache Gradle Dependencies
+          - task: Cache@2
+            displayName: 'Cache Gradle Dependencies'
+            inputs:
+              key: 'gradle | "$(Agent.OS)" | **/build.gradle.kts | **/libs.versions.toml'
+              restoreKeys: |
+                gradle | "$(Agent.OS)"
+                gradle
+              path: $(GRADLE_USER_HOME)
+
+          # Make gradlew executable
+          - script: chmod +x ./gradlew
+            displayName: 'Make gradlew executable'
+
+          # Setup google-services.json (من Azure Secure Files أو Variable)
+          - task: DownloadSecureFile@1
+            name: googleServices
+            displayName: 'Download google-services.json'
+            inputs:
+              secureFile: 'google-services.json'
+
+          - script: |
+              cp $(googleServices.secureFilePath) $(Build.SourcesDirectory)/app/google-services.json
+            displayName: 'Copy google-services.json'
+
+          # Build Debug APK
+          - script: ./gradlew assembleDebug --stacktrace --no-daemon
+            displayName: 'Build Debug APK'
+
+          # Run Unit Tests
+          - script: ./gradlew test --stacktrace --no-daemon
+            displayName: 'Run Unit Tests'
+            continueOnError: true
+
+          # Publish Test Results
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/test-results/**/*.xml'
+              failTaskOnFailedTests: false
+
+          # Run Lint
+          - script: ./gradlew lint --stacktrace --no-daemon
+            displayName: 'Run Lint'
+            continueOnError: true
+
+          # Publish Lint Results
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Lint Reports'
+            condition: always()
+            inputs:
+              pathToPublish: 'app/build/reports/lint-results-debug.html'
+              artifactName: 'lint-reports'
+
+          # Build Release APK
+          - script: ./gradlew assembleRelease --stacktrace --no-daemon
+            displayName: 'Build Release APK'
+
+          # Sign APK (Optional - يحتاج keystore)
+          # - task: AndroidSigning@3
+          #   displayName: 'Sign APK'
+          #   inputs:
+          #     apkFiles: '**/*.apk'
+          #     apksignerKeystoreFile: 'keystore.jks'
+          #     apksignerKeystorePassword: '$(keystorePassword)'
+          #     apksignerKeystoreAlias: '$(keystoreAlias)'
+          #     apksignerKeyPassword: '$(keyPassword)'
+
+          # Publish APK Artifact
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish APK Artifact'
+            inputs:
+              pathToPublish: 'app/build/outputs/apk/release'
+              artifactName: 'apk-release'
+
+  # ==========================================
+  # Stage 2: UI Tests & Screenshots
+  # ==========================================
+  - stage: UITests
+    displayName: 'UI Tests & Screenshots'
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    jobs:
+      - job: Screenshots
+        displayName: 'Take Screenshots'
+        steps:
+          - checkout: self
+
+          - task: JavaToolInstaller@0
+            displayName: 'Setup Java 17'
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - script: chmod +x ./gradlew
+            displayName: 'Make gradlew executable'
+
+          # Restore google-services.json
+          - task: DownloadSecureFile@1
+            name: googleServices
+            displayName: 'Download google-services.json'
+            inputs:
+              secureFile: 'google-services.json'
+
+          - script: |
+              cp $(googleServices.secureFilePath) $(Build.SourcesDirectory)/app/google-services.json
+            displayName: 'Copy google-services.json'
+
+          # Build Test APKs
+          - script: ./gradlew assembleDebug assembleDebugAndroidTest --stacktrace --no-daemon
+            displayName: 'Build Test APKs'
+            continueOnError: true
+
+          # Take Screenshots (using Fastlane Screengrab or Espresso)
+          # Note: يحتاج emulator أو device متصل
+          - script: |
+              echo "Screenshots require emulator setup"
+              echo "Skipping screenshots for now - can be enabled with Firebase Test Lab"
+            displayName: 'Screenshots (Placeholder)'
+
+          # Publish Screenshots
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Screenshots'
+            condition: always()
+            inputs:
+              pathToPublish: 'fastlane/screenshots'
+              artifactName: 'screenshots'
+
+  # ==========================================
+  # Stage 3: Deploy to Firebase
+  # ==========================================
+  - stage: Deploy
+    displayName: 'Deploy to Firebase'
+    dependsOn:
+      - BuildAndTest
+      - UITests
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: FirebaseDistribution
+        displayName: 'Upload to Firebase App Distribution'
+        steps:
+          - checkout: self
+
+          # Download APK Artifact
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download APK'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'apk-release'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          # Install Firebase CLI
+          - script: |
+              curl -sL https://firebase.tools | bash
+            displayName: 'Install Firebase CLI'
+
+          # Deploy to Firebase App Distribution
+          - script: |
+              firebase appdistribution:distribute \
+                $(System.ArtifactsDirectory)/apk-release/app-release.apk \
+                --app $(FIREBASE_APP_ID) \
+                --token $(FIREBASE_TOKEN) \
+                --groups "internal-testers" \
+                --release-notes "CI/CD Build $(Build.BuildNumber) - $(Build.SourceBranchName)"
+            displayName: 'Deploy to Firebase App Distribution'
+            env:
+              FIREBASE_TOKEN: $(FIREBASE_TOKEN)
+              FIREBASE_APP_ID: $(FIREBASE_APP_ID)
+
+          # Send Notification (Optional)
+          - script: |
+              echo "✅ Build $(Build.BuildNumber) deployed successfully!"
+              echo "Download Link: https://appdistribution.firebase.google.com"
+            displayName: 'Deployment Success Notification'
+
+  # ==========================================
+  # Stage 4: Notify (Optional)
+  # ==========================================
+  - stage: Notify
+    displayName: 'Send Notifications'
+    dependsOn: Deploy
+    condition: always()
+    jobs:
+      - job: SendNotification
+        displayName: 'Send Build Status'
+        steps:
+          - script: |
+              echo "Build Status: $(Agent.JobStatus)"
+              echo "Build Number: $(Build.BuildNumber)"
+              # هنا ممكن تضيف Slack/Teams notification
+            displayName: 'Notification Placeholder'
+

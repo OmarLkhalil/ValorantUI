@@ -134,6 +134,24 @@ reports/
 # Secrets
 secrets.properties
 api_keys.properties
+.env
+.env.local
+.env.*.local
+
+# Fastlane specific
+fastlane/.env
+fastlane/.env.*
+fastlane/Pluginfile.lock
+fastlane/Gemfile.lock
+
+# Firebase
+firebase-debug.log
+.firebase/
+
+# CI/CD
+*.log
+*.tar
+*.gz
 
 # Build outputs
 outputs/
