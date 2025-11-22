@@ -41,7 +41,9 @@ workflows:
 
       - name: Build Kotlin Framework First
         script: |
-          ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+          export XCODE_CONFIGURATION=Debug
+          export NATIVE_ARCH=iosSimulatorArm64
+          ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode
           echo "Kotlin framework built"
 
       - name: Build iosApp for simulator
