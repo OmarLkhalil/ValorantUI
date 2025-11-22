@@ -81,7 +81,6 @@ kotlin {
             //Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
-            implementation(libs.coil.network.okhttp)
 
             //datastore
             implementation(libs.androidx.datastore.core.okio)
@@ -89,41 +88,40 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core.v190)
 
 
-
         }
 
         // Android-only dependencies (place all Android-specific compose / koin android / android-driver here)
-            androidMain.dependencies {
-                implementation(libs.androidx.activity.compose)
-                implementation(libs.androidx.core.ktx)
-                implementation(libs.androidx.lifecycle.runtime.ktx)
-                implementation(libs.androidx.lifecycle.viewmodel.compose)
-                implementation(libs.androidx.datastore.preferences)
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.lifecycle.runtime.ktx)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.datastore.preferences)
 
-                // Android-specific Ktor engine and OkHttp (Android engine)
-                implementation(libs.ktor.client.okhttp)
-                implementation(libs.ktor.android)
+            // Android-specific Ktor engine and OkHttp (Android engine)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.ktor.android)
 
-                // Android-only Compose material / icons / navigation (androidx)
-                implementation(libs.androidx.compose.material) // androidx-material alias
-                implementation(libs.androidx.compose.material.icons.extended) // icons
-                implementation(libs.androidx.compose.foundation.layout) // foundation layout
-                implementation(libs.androidx.navigation.compose) // navigation-compose
+            // Android-only Compose material / icons / navigation (androidx)
+            implementation(libs.androidx.compose.material) // androidx-material alias
+            implementation(libs.androidx.compose.material.icons.extended) // icons
+            implementation(libs.androidx.compose.foundation.layout) // foundation layout
+            implementation(libs.androidx.navigation.compose) // navigation-compose
 
-                // Koin Android specifics
-                implementation(libs.koin.android)
-                implementation(libs.koin.androidx.compose)
+            // Koin Android specifics
+            implementation(libs.koin.android)
+            implementation(libs.koin.androidx.compose)
 //                implementation(libs.koin.androidx.viewmodel)
-                implementation(libs.coil.network.ktor3)
-                implementation(libs.coil.network.okhttp)
-                // SQLDelight Android driver
-                implementation(libs.sqldelight.android.driver)
+            implementation(libs.coil.network.ktor3)
+            implementation(libs.coil.network.okhttp)
+            // SQLDelight Android driver
+            implementation(libs.sqldelight.android.driver)
 
-                // Coil (Android)
-                implementation(libs.coil.compose)
-                implementation(libs.lottie.compose)
-                implementation(libs.accompanist.pager)
-                implementation(libs.sdp.compose)
+            // Coil (Android)
+            implementation(libs.coil.compose)
+            implementation(libs.lottie.compose)
+            implementation(libs.accompanist.pager)
+            implementation(libs.sdp.compose)
         }
 
         // Android Testing dependencies
@@ -137,27 +135,25 @@ kotlin {
         }
 
         // iOS-only dependencies
-//        val iosMain by getting {
-//            dependencies {
-//                implementation(libs.ktor.darwin)
-//                // use native driver for iOS
-//                implementation(libs.sqlDelight.native)
-//            }
-//        }
+        iosMain.dependencies {
+            implementation(libs.ktor.darwin)
+            // use native driver for iOS
+            implementation(libs.sqldelight.native.driver)
+        }
 
         // Desktop-only dependencies
         val desktopMain by getting
-            desktopMain.dependencies {
-                implementation(compose.desktop.currentOs)
-                implementation(libs.ktor.java)
-                implementation(libs.sqldelight.coroutines.extensions)
-                implementation(libs.sqlDelight.jvm)
-                implementation(libs.coil.network.ktor3)
-                implementation(libs.coil.network.okhttp)
-            }
+        desktopMain.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.ktor.java)
+            implementation(libs.sqldelight.coroutines.extensions)
+            implementation(libs.sqldelight.jvm.driver)
+            implementation(libs.coil.network.ktor3)
+            implementation(libs.coil.network.okhttp)
+        }
 
         // Tests
-         commonTest {
+        commonTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.junit)
