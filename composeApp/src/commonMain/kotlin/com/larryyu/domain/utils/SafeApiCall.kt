@@ -1,4 +1,5 @@
 package com.larryyu.domain.utils
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
@@ -7,10 +8,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withTimeout
-import java.io.IOException
-import java.net.UnknownHostException
+import kotlinx.io.IOException
 const val NETWORK_TIMEOUT: Long = 6000000000
-suspend fun <T> safeApiCall(
+fun <T> safeApiCall(
     apiCall: suspend () -> T
 ): Flow<DataState<T>> = flow {
     withTimeout(NETWORK_TIMEOUT) {
@@ -32,14 +32,16 @@ fun <T> handleError(it: Throwable): DataState<T> {
         is TimeoutCancellationException -> {
             DataState.Error(NetworkExceptions.TimeoutException)
         }
-        is UnknownHostException -> {
+        is IOException -> {
             DataState.Error(NetworkExceptions.ConnectionException)
         }
-        is IOException -> {
-            DataState.Error(NetworkExceptions.UnknownException)
-        }
         else -> {
-            DataState.Error(NetworkExceptions.UnknownException)
+            val message = it.message?.lowercase() ?: ""
+            if (message.contains("host") || message.contains("network") || message.contains("connect")) {
+                DataState.Error(NetworkExceptions.ConnectionException)
+            } else {
+                DataState.Error(NetworkExceptions.UnknownException)
+            }
         }
     }
 }
