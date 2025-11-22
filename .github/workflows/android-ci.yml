@@ -10,6 +10,12 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  actions: read
+
 env:
   JAVA_VERSION: 17
 
@@ -44,7 +50,34 @@ jobs:
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
-          echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "⚠️ Warning: GOOGLE_SERVICES_JSON secret is not set"
+            echo "Creating dummy google-services.json for build"
+            cat > app/google-services.json << 'EOF'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "dummy-project"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                  "android_client_info": {
+                    "package_name": "com.larryyu.valorantui"
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          else
+            echo "✅ Creating google-services.json from secret"
+            echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          fi
+          echo "google-services.json preview (first 3 lines):"
+          head -3 app/google-services.json
 
       - name: Cache Gradle Dependencies
         uses: actions/cache@v4
@@ -66,8 +99,12 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
+        continue-on-error: true
         with:
-          files: '**/test-results/**/*.xml'
+          files: |
+            **/build/test-results/test*/**/*.xml
+            **/build/test-results/testDebugUnitTest/**/*.xml
+          check_name: 'Test Results'
 
       - name: Run Lint
         run: ./gradlew lint --stacktrace --no-daemon
