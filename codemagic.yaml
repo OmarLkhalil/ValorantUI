@@ -1,374 +1,69 @@
-# 🍎 Codemagic CI/CD for iOS - ValorantUI
+# 🍎 Codemagic CI/CD for iOS - ValorantUI (Simplified)
+# Build XCFramework only - No complex Xcode project
 
 workflows:
-  # ==========================================
-  # Workflow 1: iOS Simulator Build (NO SIGNING REQUIRED)
-  # ==========================================
-  ios-simulator-workflow:
-    name: iOS Simulator Build (No Signing)
+  ios-framework-build:
+    name: iOS XCFramework Build
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
-      vars:
-        XCODE_WORKSPACE: "iosApp/iosApp.xcworkspace"
-        XCODE_SCHEME: "iosApp"
       xcode: latest
       cocoapods: default
 
     scripts:
-      - name: Show Xcode version
+      - name: Setup Java
         script: |
-          xcodebuild -version
-          xcrun simctl list devices
-
-      - name: Setup Java Environment
-        script: |
-          # Codemagic already has Java pre-installed
-          export JAVA_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null || /usr/libexec/java_home)
+          export JAVA_HOME=$(/usr/libexec/java_home -v 17)
           export PATH=$JAVA_HOME/bin:$PATH
-          
           java -version
-          echo "JAVA_HOME: $JAVA_HOME"
-
-      - name: Build Kotlin Multiplatform Framework
-        script: |
-          set -e  # Exit on error
-          set -x  # Print commands
-          
           cd $CM_BUILD_DIR
-          
-          # Make gradlew executable
           chmod +x ./gradlew
+
+      - name: Build iOS Frameworks
+        script: |
+          set -e
+          cd $CM_BUILD_DIR
+          echo "🔨 Building Kotlin Multiplatform iOS Frameworks..."
           
-          # List available tasks
-          echo "📋 Available Gradle tasks:"
-          ./gradlew tasks --all | grep -i "framework\|ios" || echo "No iOS tasks found"
+          ./gradlew :composeApp:linkDebugFrameworkIosArm64 \
+            :composeApp:linkDebugFrameworkIosX64 \
+            :composeApp:linkDebugFrameworkIosSimulatorArm64 \
+            --stacktrace --no-daemon
           
-          # Clean build
-          ./gradlew clean || echo "Clean failed, continuing..."
-          
-          # Build iOS frameworks for all architectures
-          echo "🔨 Building iOS frameworks..."
-          
-          # Try different task names (depends on KMP version)
-          if ./gradlew tasks --all | grep -q "assembleXCFramework"; then
-            echo "Using assembleXCFramework task"
-            ./gradlew :composeApp:assembleXCFramework --stacktrace --no-daemon
-          elif ./gradlew tasks --all | grep -q "linkDebugFrameworkIos"; then
-            echo "Using linkDebugFrameworkIos tasks"
-            ./gradlew \
-              :composeApp:linkDebugFrameworkIosArm64 \
-              :composeApp:linkDebugFrameworkIosX64 \
-              :composeApp:linkDebugFrameworkIosSimulatorArm64 \
-              --stacktrace --no-daemon || echo "Some iOS framework builds failed"
-          else
-            echo "⚠️ No iOS framework tasks found - iOS targets may not be configured"
-            echo "Building Android only..."
-            ./gradlew :composeApp:assembleDebug --stacktrace --no-daemon
-          fi
-          
-          # Verify build output
-          echo "🔍 Searching for build outputs..."
-          find composeApp/build -type d -name "*.framework" -o -name "*.xcframework" | head -20
-          
-          # Create artifacts directory structure
+          echo "✅ Frameworks built successfully"
+
+      - name: Archive Artifacts
+        script: |
           mkdir -p artifacts/frameworks
           
-          # Copy frameworks if they exist
           if [ -d "composeApp/build/bin" ]; then
-            echo "✅ Found iOS frameworks in bin/"
-            cp -R composeApp/build/bin/* artifacts/frameworks/ 2>/dev/null || echo "Copy failed"
-            ls -la artifacts/frameworks/
+            cp -R composeApp/build/bin/* artifacts/frameworks/
+            echo "✅ Frameworks archived"
           fi
           
-          if [ -d "composeApp/build/XCFrameworks" ]; then
-            echo "✅ Found XCFrameworks"
-            cp -R composeApp/build/XCFrameworks/* artifacts/frameworks/ 2>/dev/null || echo "Copy failed"
-          fi
-          
-          # Check if we have any artifacts
-          if [ -z "$(ls -A artifacts/frameworks/)" ]; then
-            echo "⚠️ No iOS frameworks generated"
-            echo "This may be expected if iOS targets are not configured"
-            echo "Framework build step completed without iOS output"
-          else
-            echo "✅ iOS frameworks generated successfully"
-            ls -laR artifacts/frameworks/
-          fi
+          # Build report
+          cat > artifacts/README.md << 'EOF'
+# ValorantUI - iOS XCFramework Build
 
-      - name: Check for Xcode project
-        script: |
-          # Check if iosApp exists
-          if [ -d "iosApp" ] && [ -f "iosApp/iosApp.xcodeproj/project.pbxproj" ]; then
-            echo "✅ Found Xcode project"
-            export HAS_XCODE_PROJECT=true
-          elif [ -d "iosApp" ] && [ -f "iosApp/iosApp.xcworkspace/contents.xcworkspacedata" ]; then
-            echo "✅ Found Xcode workspace"
-            export HAS_XCODE_PROJECT=true
-          else
-            echo "⚠️ No Xcode project found"
-            echo "This is OK - we'll just build the XCFramework"
-            export HAS_XCODE_PROJECT=false
-          fi
+✅ **Build Status:** Success
+📦 **Artifacts:** iOS Frameworks ready for integration
+📅 **Build Date:** $(date)
+🔗 **Commit:** $CM_COMMIT
 
-      - name: Build for iOS Simulator (Optional)
-        script: |
-          # Only build if Xcode project exists
-          if [ -d "iosApp" ] && ([ -f "iosApp/iosApp.xcodeproj/project.pbxproj" ] || [ -f "iosApp/iosApp.xcworkspace/contents.xcworkspacedata" ]); then
-            echo "Building iOS app..."
-            
-            cd iosApp
-            
-            # Determine if we have workspace or project
-            if [ -f "iosApp.xcworkspace/contents.xcworkspacedata" ]; then
-              BUILD_TARGET="-workspace iosApp.xcworkspace"
-            else
-              BUILD_TARGET="-project iosApp.xcodeproj"
-            fi
-            
-            # Build for simulator - NO SIGNING REQUIRED
-            xcodebuild build \
-              $BUILD_TARGET \
-              -scheme iosApp \
-              -sdk iphonesimulator \
-              -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
-              -configuration Debug \
-              CODE_SIGN_IDENTITY="" \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGNING_ALLOWED=NO \
-              -derivedDataPath $CM_BUILD_DIR/build \
-              || echo "⚠️ Xcode build failed, continuing with XCFramework only"
-            
-            cd ..
-            echo "✅ iOS app build attempted"
-          else
-            echo "⚠️ Skipping iOS app build - no Xcode project found"
-            echo "✅ XCFramework is available for integration"
-          fi
+## 📲 Next Steps
 
-      - name: Take Screenshots on Simulator (Automated)
-        script: |
-          set -x
-          
-          # Find the built app
-          APP_PATH=$(find $CM_BUILD_DIR/build -name "*.app" -type d 2>/dev/null | grep -v "Intermediates" | head -1)
-          
-          if [ -z "$APP_PATH" ]; then
-            echo "⚠️ No .app found - creating placeholder"
-            mkdir -p screenshots
-            echo "No iOS app built - XCFramework only" > screenshots/README.txt
-            exit 0
-          fi
-          
-          echo "✅ Found app at: $APP_PATH"
-          
-          # Bundle ID
-          BUNDLE_ID="com.larryyu.valorantui"
-          
-          # Create screenshots directory
-          mkdir -p screenshots/light screenshots/dark
-          
-          # Function to take screenshots
-          take_screenshots() {
-            local THEME=$1
-            local SIMULATOR_UDID=$2
-            
-            echo "📸 Taking screenshots in $THEME mode..."
-            
-            # Wait for app to load
-            sleep 5
-            
-            # Screenshot 1: Home/Agents List
-            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/01_agents_list.png"
-            echo "✅ Screenshot 1: Agents List"
-            sleep 2
-            
-            # Simulate tap on first agent (approximate coordinates)
-            xcrun simctl io $SIMULATOR_UDID tap 200 300
-            sleep 3
-            
-            # Screenshot 2: Agent Details
-            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/02_agent_details.png"
-            echo "✅ Screenshot 2: Agent Details"
-            sleep 2
-            
-            # Go back
-            xcrun simctl io $SIMULATOR_UDID tap 30 60
-            sleep 2
-            
-            # Navigate to weapons (tap on bottom nav if exists)
-            xcrun simctl io $SIMULATOR_UDID tap 200 700
-            sleep 3
-            
-            # Screenshot 3: Weapons List
-            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/03_weapons_list.png"
-            echo "✅ Screenshot 3: Weapons List"
-            sleep 2
-            
-            # Tap on weapon
-            xcrun simctl io $SIMULATOR_UDID tap 200 300
-            sleep 3
-            
-            # Screenshot 4: Weapon Details
-            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/04_weapon_details.png"
-            echo "✅ Screenshot 4: Weapon Details"
-            sleep 2
-            
-            # Screenshot 5: Maps (if available)
-            xcrun simctl io $SIMULATOR_UDID tap 30 60
-            sleep 2
-            xcrun simctl io $SIMULATOR_UDID tap 300 700
-            sleep 3
-            xcrun simctl io $SIMULATOR_UDID screenshot "screenshots/$THEME/05_maps.png"
-            echo "✅ Screenshot 5: Maps"
-            
-            echo "✅ Finished $THEME mode screenshots"
-          }
-          
-          # ====== LIGHT MODE SCREENSHOTS ======
-          echo "🌞 Starting Light Mode Screenshots..."
-          
-          SIMULATOR_NAME="iPhone 15 Pro"
-          
-          # Boot simulator
-          xcrun simctl boot "$SIMULATOR_NAME" 2>/dev/null || echo "Simulator already booted"
-          sleep 5
-          
-          # Get simulator UDID
-          SIMULATOR_UDID=$(xcrun simctl list devices | grep "$SIMULATOR_NAME" | grep -E -o -i "([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12})" | head -1)
-          echo "Simulator UDID: $SIMULATOR_UDID"
-          
-          # Set light appearance
-          xcrun simctl ui $SIMULATOR_UDID appearance light
-          sleep 2
-          
-          # Install app
-          xcrun simctl install $SIMULATOR_UDID "$APP_PATH"
-          sleep 2
-          
-          # Launch app
-          xcrun simctl launch $SIMULATOR_UDID $BUNDLE_ID
-          
-          # Take screenshots
-          take_screenshots "light" "$SIMULATOR_UDID"
-          
-          # Terminate app
-          xcrun simctl terminate $SIMULATOR_UDID $BUNDLE_ID
-          sleep 2
-          
-          # ====== DARK MODE SCREENSHOTS ======
-          echo "🌙 Starting Dark Mode Screenshots..."
-          
-          # Set dark appearance
-          xcrun simctl ui $SIMULATOR_UDID appearance dark
-          sleep 2
-          
-          # Launch app again
-          xcrun simctl launch $SIMULATOR_UDID $BUNDLE_ID
-          
-          # Take screenshots
-          take_screenshots "dark" "$SIMULATOR_UDID"
-          
-          # Terminate app
-          xcrun simctl terminate $SIMULATOR_UDID $BUNDLE_ID
-          
-          # Shutdown simulator
-          xcrun simctl shutdown $SIMULATOR_UDID
-          
-          echo "✅ All screenshots completed!"
-          echo "📊 Screenshot summary:"
-          ls -la screenshots/light/
-          ls -la screenshots/dark/
+1. Download XCFramework artifacts
+2. Create your iOS Xcode project
+3. Link against ComposeApp framework
+4. Build your iOS app
 
-      - name: Archive build artifacts
-        script: |
-          # artifacts/frameworks should already exist from previous step
-          
-          # Archive .app if exists
-          APP_COUNT=$(find $CM_BUILD_DIR/build -name "*.app" -type d 2>/dev/null | grep -v "Intermediates" | wc -l)
-          if [ "$APP_COUNT" -gt 0 ]; then
-            echo "Archiving $APP_COUNT app(s)..."
-            mkdir -p artifacts/apps
-            find $CM_BUILD_DIR/build -name "*.app" -type d 2>/dev/null | grep -v "Intermediates" | while read app; do
-              cp -R "$app" artifacts/apps/ 2>/dev/null || echo "Failed to copy $app"
-            done
-          else
-            echo "⚠️ No .app bundles found"
-          fi
-          
-          # Create build info
-          echo "ValorantUI - Kotlin Multiplatform Build" > artifacts/BUILD_INFO.txt
-          echo "Build Date: $(date)" >> artifacts/BUILD_INFO.txt
-          echo "Commit: $CM_COMMIT" >> artifacts/BUILD_INFO.txt
-          echo "Branch: $CM_BRANCH" >> artifacts/BUILD_INFO.txt
-          echo "" >> artifacts/BUILD_INFO.txt
-          echo "Artifacts:" >> artifacts/BUILD_INFO.txt
-          ls -lhR artifacts/ >> artifacts/BUILD_INFO.txt
-          
-          echo "✅ Artifacts prepared successfully"
-          cat artifacts/BUILD_INFO.txt
+## 📚 Documentation
+See: docs/IOS_CICD_GUIDE.md
+EOF
 
     artifacts:
       - artifacts/**/*
-      - screenshots/light/*.png
-      - screenshots/dark/*.png
-      - screenshots/*.txt
-      - screenshots/**/*.png
-
-    publishing:
-      email:
-        recipients:
-          - omarkkhalil12@gmail.com
-        notify:
-          success: true
-          failure: true
-
-      # No App Store publishing (requires signing)
-      # slack:
-      #   channel: '#ios-builds'
-      #   notify_on_build_start: false
-
-
-  # ==========================================
-  # Workflow 2: iOS App Store Build (REQUIRES APPLE DEVELOPER)
-  # ==========================================
-  ios-appstore-workflow:
-    name: iOS App Store Build (With Signing)
-    max_build_duration: 120
-    instance_type: mac_mini_m1
-    # ⚠️ ONLY ENABLE THIS IF YOU HAVE APPLE DEVELOPER ACCOUNT
-    # integrations:
-    #   app_store_connect: ValorantUI
-    environment:
-      # ios_signing:
-      #   distribution_type: app_store
-      #   bundle_identifier: com.larryyu.valorantui
-      vars:
-        XCODE_WORKSPACE: "iosApp/iosApp.xcworkspace"
-        XCODE_SCHEME: "iosApp"
-      xcode: latest
-      cocoapods: default
-
-    triggering:
-      events:
-        - tag
-      branch_patterns:
-        - pattern: 'release/*'
-      cancel_previous_builds: true
-
-    scripts:
-      - name: Placeholder for App Store Build
-        script: |
-          echo "⚠️ This workflow requires:"
-          echo "1. Apple Developer Account ($99/year)"
-          echo "2. App Store Connect API Key"
-          echo "3. Signing certificates"
-          echo ""
-          echo "For showcase/portfolio, use 'ios-simulator-workflow' instead"
-          exit 0
-
-    artifacts:
-      - build/ios/ipa/*.ipa
+      - composeApp/build/bin/**/*
 
     publishing:
       email:
