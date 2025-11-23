@@ -27,7 +27,8 @@ fun <T> handleSuccess(response: T): DataState<T> {
     return DataState.Error(NetworkExceptions.UnknownException)
 }
 fun <T> handleError(it: Throwable): DataState<T> {
-    it.printStackTrace()
+    // Log error (printStackTrace is not available in Kotlin/Native)
+    println("Error occurred: ${it.message}")
     return when (it) {
         is TimeoutCancellationException -> {
             DataState.Error(NetworkExceptions.TimeoutException)
