@@ -1,6 +1,7 @@
 import UIKit
 import SwiftUI
 import ComposeApp
+import FirebaseCrashlytics
 
 struct ComposeView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
@@ -12,8 +13,28 @@ struct ComposeView: UIViewControllerRepresentable {
 
 struct ContentView: View {
     var body: some View {
-        ComposeView()
+        ZStack {
+            ComposeView()
                 .ignoresSafeArea(.keyboard) // Compose has own keyboard handler
+
+            // Test crash button (only visible in debug builds)
+            #if DEBUG
+            VStack {
+                Spacer()
+                Button(action: {
+                    // Force a test crash as per Firebase documentation
+                    fatalError("Test Crash - Firebase Crashlytics")
+                }) {
+                    Text("🧪 Test Crash")
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.red)
+                        .cornerRadius(8)
+                }
+                .padding(.bottom, 50)
+            }
+            #endif
+        }
     }
 }
 

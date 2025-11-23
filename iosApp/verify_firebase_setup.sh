@@ -78,8 +78,39 @@ else
 fi
 echo ""
 
-# Check 5: Workspace
-echo "📋 Check 5: Xcode Workspace"
+# Check 5: Info.plist Configuration
+echo "📋 Check 5: Info.plist Configuration"
+if grep -q "FirebaseCrashlyticsCollectionEnabled" iosApp/iosApp/Info.plist; then
+    echo "✅ Crashlytics collection enabled in Info.plist"
+else
+    echo "⚠️  Crashlytics collection not configured in Info.plist"
+fi
+echo ""
+
+# Check 6: Analytics Enabled
+echo "📋 Check 6: Analytics Configuration"
+if grep -A 1 "IS_ANALYTICS_ENABLED" iosApp/GoogleService-Info.plist | grep -q "<true/>"; then
+    echo "✅ Analytics enabled (for breadcrumb logs)"
+else
+    echo "⚠️  Analytics disabled - enable for better crash context"
+fi
+echo ""
+
+# Check 7: Crashlytics Run Script
+echo "📋 Check 7: Crashlytics Build Phase Script"
+if [ -f "iosApp/iosApp.xcodeproj/project.pbxproj" ]; then
+    if grep -q "FirebaseCrashlytics/run" iosApp/iosApp.xcodeproj/project.pbxproj; then
+        echo "✅ Crashlytics run script found"
+    else
+        echo "⚠️  Crashlytics run script NOT found!"
+        echo "   ⚠️  This is REQUIRED to upload dSYM files"
+        echo "   Run: bash iosApp/add_crashlytics_script.sh"
+    fi
+fi
+echo ""
+
+# Check 8: Xcode Workspace
+echo "📋 Check 8: Xcode Workspace"
 if [ -f "iosApp/iosApp.xcworkspace/contents.xcworkspacedata" ]; then
     echo "✅ Xcode workspace exists"
     echo "   📂 Open with: open iosApp/iosApp.xcworkspace"
@@ -111,6 +142,16 @@ fi
 
 if ! grep -q "FirebaseApp.configure()" iosApp/iosApp/iOSApp.swift; then
     ERRORS=$((ERRORS + 1))
+fi
+
+if ! grep -q "FirebaseCrashlyticsCollectionEnabled" iosApp/iosApp/Info.plist; then
+    WARNINGS=$((WARNINGS + 1))
+fi
+
+if ! grep -q "FirebaseCrashlytics/run" iosApp/iosApp.xcodeproj/project.pbxproj; then
+    WARNINGS=$((WARNINGS + 1))
+    echo "⚠️  Important: Add Crashlytics build phase script manually"
+    echo "   See: iosApp/FIREBASE_CRASHLYTICS_SETUP.md"
 fi
 
 if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
