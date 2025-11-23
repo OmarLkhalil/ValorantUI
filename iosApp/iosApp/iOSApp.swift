@@ -3,7 +3,7 @@ import ComposeApp
 
 extension KoinHelper {
     func doInitKoin() {
-        KoinHelper.doInitKoinFromSwift()
+        KoinHelper.shared.doInitKoinFromSwift()
     }
 }
 
