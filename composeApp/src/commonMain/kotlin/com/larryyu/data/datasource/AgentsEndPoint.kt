@@ -1,6 +1,6 @@
 package com.larryyu.data.datasource
 import com.larryyu.data.model.AgentsResponseBody
-import com.larryyu.domain.entitiy.BaseResponse
+import com.larryyu.domain.entity.BaseResponse
 import com.larryyu.domain.model.AgentDetailsData
 import com.larryyu.domain.model.AgentsModel
 import com.larryyu.domain.utils.RetrofitConstants

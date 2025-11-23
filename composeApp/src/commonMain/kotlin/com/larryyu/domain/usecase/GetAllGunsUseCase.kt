@@ -1,5 +1,5 @@
 package com.larryyu.domain.usecase
-import com.larryyu.domain.entitiy.BaseResponse
+import com.larryyu.domain.entity.BaseResponse
 import com.larryyu.domain.model.GunsData
 import com.larryyu.domain.repository.GunsRepo
 import com.larryyu.domain.utils.DataState

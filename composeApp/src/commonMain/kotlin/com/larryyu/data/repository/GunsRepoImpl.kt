@@ -1,7 +1,7 @@
 package com.larryyu.data.repository
 import com.larryyu.data.datasource.WeaponsEndPoint
 import com.larryyu.db.ValorantDatabase
-import com.larryyu.domain.entitiy.BaseResponse
+import com.larryyu.domain.entity.BaseResponse
 import com.larryyu.domain.model.BundlesData
 import com.larryyu.domain.model.GunsData
 import com.larryyu.domain.repository.GunsRepo

@@ -1,29 +1,33 @@
 package com.larryyu.presentation.viewmodel
-import com.larryyu.domain.usecase.GetAllBundlesUseCase
+
 import com.larryyu.domain.usecase.GetAllGunsUseCase
+import com.larryyu.presentation.mapper.toUiModels
 import com.larryyu.presentation.uistates.GunsIntent
 import com.larryyu.presentation.uistates.GunsState
+
 class GunsViewModel(
     private val getAllGunsUseCase: GetAllGunsUseCase,
-    private val getAllBundlesUseCase: GetAllBundlesUseCase,
 ) : BaseViewModel<GunsIntent, GunsState>(GunsState()) {
+
     val gState = state
+
     override suspend fun handleIntent(intent: GunsIntent) {
         super.handleIntent(intent)
         when (intent) {
             is GunsIntent.FetchGuns -> {
-                fetchAllData()
+                fetchWeapons()
             }
         }
     }
-    private suspend fun fetchAllData() {
+
+    private suspend fun fetchWeapons() {
         setState { copy(isLoading = true, error = null) }
         try {
             collectDataState(getAllGunsUseCase()) { response ->
-                setState { copy(guns = response.data ?: emptyList()) }
-            }
-            collectDataState(getAllBundlesUseCase()) { response ->
-                setState { copy(bundles = response.data ?: emptyList()) }
+                val domainWeapons = response.data ?: emptyList()
+                val uiWeapons = domainWeapons.toUiModels()
+
+                setState { copy(weapons = uiWeapons) }
             }
         } catch (e: Exception) {
             setState { copy(error = e.message ?: "Unknown error") }

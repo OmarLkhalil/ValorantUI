@@ -36,7 +36,7 @@ class AgentDetailsViewModelTest {
         val agentId = "test-agent-123"
         val mockAgentDetails = createMockAgentDetails(agentId, "Jett")
         mockAgentDetailsUseCase.setAgentDetailsResult(
-            DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = mockAgentDetails))
+            DataState.Success(com.larryyu.domain.entity.BaseResponse(data = mockAgentDetails))
         )
         viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails(agentId))
         advanceUntilIdle()
@@ -68,7 +68,7 @@ class AgentDetailsViewModelTest {
     fun `fetch different agents should update state correctly`() = runTest {
         val agent1 = createMockAgentDetails("1", "Jett")
         mockAgentDetailsUseCase.setAgentDetailsResult(
-            DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = agent1))
+            DataState.Success(com.larryyu.domain.entity.BaseResponse(data = agent1))
         )
         viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails("1"))
         advanceUntilIdle()
@@ -76,7 +76,7 @@ class AgentDetailsViewModelTest {
         assertEquals("Jett", firstState.agentDetails.displayName)
         val agent2 = createMockAgentDetails("2", "Phoenix")
         mockAgentDetailsUseCase.setAgentDetailsResult(
-            DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = agent2))
+            DataState.Success(com.larryyu.domain.entity.BaseResponse(data = agent2))
         )
         viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails("2"))
         advanceUntilIdle()
@@ -94,7 +94,7 @@ class AgentDetailsViewModelTest {
         )
         val agent = createMockAgentDetails("jett-id", "Jett", abilities)
         mockAgentDetailsUseCase.setAgentDetailsResult(
-            DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = agent))
+            DataState.Success(com.larryyu.domain.entity.BaseResponse(data = agent))
         )
         viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails("jett-id"))
         advanceUntilIdle()
@@ -109,7 +109,7 @@ class AgentDetailsViewModelTest {
     fun `rapid consecutive fetches should handle correctly`() = runTest {
         val agent = createMockAgentDetails("test-id", "Test Agent")
         mockAgentDetailsUseCase.setAgentDetailsResult(
-            DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = agent))
+            DataState.Success(com.larryyu.domain.entity.BaseResponse(data = agent))
         )
         repeat(5) {
             viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails("test-id"))
@@ -128,7 +128,7 @@ class AgentDetailsViewModelTest {
         assertNotNull(errorState.error)
         val agent = createMockAgentDetails("test-id", "Recovered Agent")
         mockAgentDetailsUseCase.setAgentDetailsResult(
-            DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = agent))
+            DataState.Success(com.larryyu.domain.entity.BaseResponse(data = agent))
         )
         viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails("test-id"))
         advanceUntilIdle()
@@ -140,7 +140,7 @@ class AgentDetailsViewModelTest {
     fun `agent details with null abilities should handle gracefully`() = runTest {
         val agent = createMockAgentDetails("test-id", "Agent", null)
         mockAgentDetailsUseCase.setAgentDetailsResult(
-            DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = agent))
+            DataState.Success(com.larryyu.domain.entity.BaseResponse(data = agent))
         )
         viewModel.sendIntent(AgentDetailsIntent.FetchAgentDetails("test-id"))
         advanceUntilIdle()
@@ -190,18 +190,18 @@ class AgentDetailsViewModelTest {
 class FakeAgentDetailsUseCase(
     private val fakeRepo: FakeAgentsRepoForAgentDetails = FakeAgentsRepoForAgentDetails()
 ) : AgentDetailsUseCase(fakeRepo) {
-    fun setAgentDetailsResult(result: DataState<com.larryyu.domain.entitiy.BaseResponse<AgentDetailsData>>) {
+    fun setAgentDetailsResult(result: DataState<com.larryyu.domain.entity.BaseResponse<AgentDetailsData>>) {
         fakeRepo.setAgentDetailsResult(result)
     }
 }
 class FakeAgentsRepoForAgentDetails : com.larryyu.domain.repository.AgentsRepo {
-    private var agentDetailsResult: DataState<com.larryyu.domain.entitiy.BaseResponse<AgentDetailsData>> =
-        DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = AgentDetailsData()))
-    fun setAgentDetailsResult(result: DataState<com.larryyu.domain.entitiy.BaseResponse<AgentDetailsData>>) {
+    private var agentDetailsResult: DataState<com.larryyu.domain.entity.BaseResponse<AgentDetailsData>> =
+        DataState.Success(com.larryyu.domain.entity.BaseResponse(data = AgentDetailsData()))
+    fun setAgentDetailsResult(result: DataState<com.larryyu.domain.entity.BaseResponse<AgentDetailsData>>) {
         agentDetailsResult = result
     }
     override suspend fun getAgents() = flow {
-        emit(DataState.Success(com.larryyu.domain.entitiy.BaseResponse(data = emptyList<com.larryyu.domain.model.AgentsModel>())))
+        emit(DataState.Success(com.larryyu.domain.entity.BaseResponse(data = emptyList<com.larryyu.domain.model.AgentsModel>())))
     }
     override suspend fun getAgentDetails(id: String) = flow {
         when (val result = agentDetailsResult) {

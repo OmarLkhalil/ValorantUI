@@ -12,9 +12,7 @@ import com.larryyu.domain.repository.AgentsRepo
 import com.larryyu.domain.repository.GunsRepo
 import com.larryyu.domain.repository.PreferencesRepo
 import com.larryyu.domain.usecase.AgentDetailsUseCase
-import com.larryyu.domain.usecase.AgentsUseCase
-import com.larryyu.domain.usecase.AgentsUseCaseImpl
-import com.larryyu.domain.usecase.GetAllBundlesUseCase
+import com.larryyu.domain.usecase.GetAgentsUseCase
 import com.larryyu.domain.usecase.GetAllGunsUseCase
 import com.larryyu.domain.usecase.GetThemeUseCase
 import com.larryyu.domain.usecase.SetThemeUseCase
@@ -36,9 +34,10 @@ fun commonModule(enableNetworkLogs: Boolean = false) = module {
     single { ValorantDatabase(get()) }
     single<AgentsRepo> { AgentsRepoImpl(get(), get()) }
     single<GunsRepo> { GunsRepoImpl(get(), get()) }
-    single<AgentsUseCase> { AgentsUseCaseImpl(get()) }
+
+    // Use cases
+    factory { GetAgentsUseCase(get()) }
     factory { AgentDetailsUseCase(get()) }
-    factory { GetAllBundlesUseCase(get()) }
     factory { GetAllGunsUseCase(get()) }
     singleOf(::AgentsViewModel)
     singleOf(::AgentDetailsViewModel)

@@ -1,6 +1,7 @@
 package com.larryyu.presentation.viewmodel
 import com.larryyu.domain.repository.AgentsRepo
 import com.larryyu.domain.utils.DataState
+import com.larryyu.presentation.mapper.toUiModels
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
 import com.larryyu.ui.components.extensions.EventFlow
@@ -9,25 +10,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+
 class AgentsViewModel(
     private val agentsRepo: AgentsRepo
 ) : KoinComponent {
+
     private val _agentsState = MutableStateFlow(AgentsUIState())
     val agentsState: StateFlow<AgentsUIState> = _agentsState
     private val viewModelScope = CoroutineScope(Dispatchers.Default)
     private val intentState = MutableSharedFlow<AgentsIntent>()
+
     init {
         processIntents()
     }
+
     fun sendIntent(intent: AgentsIntent) {
         viewModelScope.launch {
             intentState.emit(intent)
         }
     }
+
     private fun processIntents() {
         viewModelScope.launch {
             intentState.collect { agentIntent ->
@@ -36,6 +40,7 @@ class AgentsViewModel(
                         loadAgents()
                     }
                     is AgentsIntent.OpenDetails -> {
+                        // Navigate to agent details screen
                         navigateToDetails(agentIntent.agentId)
                     }
                 }
@@ -53,26 +58,32 @@ class AgentsViewModel(
         agentsRepo.getAgents().collect { result ->
             when (result) {
                 is DataState.Success -> {
+                    // Map domain models to UI models
+                    val domainAgents = result.data.data ?: emptyList()
+                    val uiAgents = domainAgents.toUiModels()
+
                     updateAgentsUiState(
-                        AgentsUIState().copy(
-                            agents = result.data.data ?: emptyList(),
-                            isLoading = false
+                        _agentsState.value.copy(
+                            agents = uiAgents,
+                            isLoading = false,
+                            error = null
                         )
                     )
                 }
                 is DataState.Loading -> {
-                    updateAgentsUiState(AgentsUIState().copy(isLoading = true))
+                    updateAgentsUiState(_agentsState.value.copy(isLoading = true))
                 }
                 is DataState.Error -> {
                     updateAgentsUiState(
-                        AgentsUIState().copy(
+                        _agentsState.value.copy(
                             isLoading = false,
-                            error = result.exception.message.orEmpty()
+                            error = result.exception.message ?: "Unknown error"
                         )
                     )
                 }
                 is DataState.Idle -> {
-                    updateAgentsUiState(AgentsUIState().copy(isLoading = false))
+                    // Reset to idle state
+                    updateAgentsUiState(_agentsState.value.copy(isLoading = false))
                 }
             }
         }
@@ -91,6 +102,7 @@ class AgentsViewModel(
             }
         }
     }
+
     private suspend fun updateAgentsUiState(uiState: AgentsUIState) {
         _agentsState.emit(uiState)
     }

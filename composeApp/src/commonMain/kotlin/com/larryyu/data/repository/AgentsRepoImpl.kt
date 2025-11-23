@@ -2,7 +2,7 @@ package com.larryyu.data.repository
 import com.larryyu.data.datasource.AgentsDataSource
 import com.larryyu.data.mapper.toDomainModel
 import com.larryyu.db.ValorantDatabase
-import com.larryyu.domain.entitiy.BaseResponse
+import com.larryyu.domain.entity.BaseResponse
 import com.larryyu.domain.model.AgentDetailsData
 import com.larryyu.domain.model.AgentsModel
 import com.larryyu.domain.model.Role

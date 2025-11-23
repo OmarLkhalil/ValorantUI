@@ -1,5 +1,5 @@
 package com.larryyu.presentation.viewmodel
-import com.larryyu.domain.entitiy.BaseResponse
+import com.larryyu.domain.entity.BaseResponse
 import com.larryyu.domain.model.AgentDetailsData
 import com.larryyu.domain.model.AgentsModel
 import com.larryyu.domain.model.Role
