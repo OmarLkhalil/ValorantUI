@@ -6,7 +6,16 @@ import com.larryyu.db.ValorantDatabase
 
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
-        return NativeSqliteDriver(ValorantDatabase.Schema, "Agents.db")
+        return try {
+            println("🗄️ Creating SQLite database driver...")
+            val driver = NativeSqliteDriver(ValorantDatabase.Schema, "Agents.db")
+            println("✅ Database driver created successfully")
+            driver
+        } catch (e: Exception) {
+            println("❌ Database creation failed: ${e.message}")
+            e.printStackTrace()
+            throw e
+        }
     }
 }
 
