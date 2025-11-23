@@ -29,37 +29,37 @@ func shell(_ command: String) -> Int32 {
     return task.terminationStatus
 }
 
-func sleep(_ seconds: UInt32) {
+func waitSeconds(_ seconds: UInt32) {
     Foundation.sleep(seconds)
 }
 
 func takeScreenshot(name: String, description: String) {
     print("📷 Screenshot: \(description)")
     shell("xcrun simctl io \(simulatorUDID) screenshot \(outputDir)/\(name)")
-    sleep(2)
+    waitSeconds(2)
 }
 
 func tap(x: Int, y: Int, description: String) {
     print("👆 \(description)")
     shell("xcrun simctl io \(simulatorUDID) tap \(x) \(y)")
-    sleep(3)
+    waitSeconds(3)
 }
 
 func swipe(fromX: Int, fromY: Int, toX: Int, toY: Int, description: String) {
     print("↔️  \(description)")
     shell("xcrun simctl io \(simulatorUDID) swipe \(fromX) \(fromY) \(toX) \(toY)")
-    sleep(3)
+    waitSeconds(3)
 }
 
 // Set appearance mode
 print("🎨 Setting appearance to \(mode) mode")
 shell("xcrun simctl ui \(simulatorUDID) appearance \(mode)")
-sleep(3)
+waitSeconds(3)
 
 // Launch app
 print("🚀 Launching app...")
 shell("xcrun simctl launch \(simulatorUDID) \(bundleID)")
-sleep(10) // Wait for app to fully load
+waitSeconds(10) // Wait for app to fully load
 
 // ═══════════════════════════════════════════════════════════
 // AGENTS SECTION
@@ -72,7 +72,7 @@ takeScreenshot(name: "01_agents_screen.png", description: "Agents List Screen")
 // iPhone 15 Pro screen: 393x852 points
 // Assuming grid layout, first item should be around center-left, top third
 tap(x: 150, y: 250, description: "Tapping first agent card")
-sleep(2) // Extra wait for transition animation
+waitSeconds(2) // Extra wait for transition animation
 
 // Screenshot 2: Agent Details
 takeScreenshot(name: "02_agent_details.png", description: "Agent Details Screen")
@@ -89,14 +89,14 @@ swipe(fromX: 10, fromY: 400, toX: 300, toY: 400, description: "Swiping back from
 // Assuming 2-tab layout, second tab would be on the right side
 // iPhone 15 Pro height: 852, nav bar usually ~80pt from bottom
 tap(x: 300, y: 800, description: "Tapping Guns/Weapons tab in bottom navigation")
-sleep(2) // Wait for navigation animation
+waitSeconds(2) // Wait for navigation animation
 
 // Screenshot 3: Guns/Weapons Screen
 takeScreenshot(name: "03_guns_screen.png", description: "Guns/Weapons List Screen")
 
 // Tap on first gun/weapon
 tap(x: 150, y: 250, description: "Tapping first weapon card")
-sleep(2) // Extra wait for transition animation
+waitSeconds(2) // Extra wait for transition animation
 
 // Screenshot 4: Gun/Weapon Details
 takeScreenshot(name: "04_gun_details.png", description: "Weapon Details Screen")
@@ -107,7 +107,7 @@ takeScreenshot(name: "04_gun_details.png", description: "Weapon Details Screen")
 
 print("🧹 Terminating app...")
 shell("xcrun simctl terminate \(simulatorUDID) \(bundleID)")
-sleep(1)
+waitSeconds(1)
 
 print("")
 print("✅ Screenshots completed for \(mode) mode!")
