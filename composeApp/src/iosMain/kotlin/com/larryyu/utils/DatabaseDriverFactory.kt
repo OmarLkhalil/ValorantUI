@@ -3,6 +3,7 @@ package com.larryyu.utils
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.larryyu.db.ValorantDatabase
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
@@ -18,6 +19,7 @@ import platform.Foundation.NSUserDomainMask
  * to link against the system SQLite library.
  */
 actual class DatabaseDriverFactory {
+    @OptIn(ExperimentalForeignApi::class)
     actual fun createDriver(): SqlDriver {
         return try {
             println("🗄️ [iOS] Creating SQLite database driver...")
