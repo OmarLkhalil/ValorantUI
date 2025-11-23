@@ -7,9 +7,11 @@
 **A Beautiful Kotlin Multiplatform Mobile App showcasing Valorant Agents, Weapons, and Game Data**
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-[![Compose](https://img.shields.io/badge/Compose-Multiplatform-4285F4?style=flat&logo=jetpackcompose)](https://www.jetbrains.com/lp/compose-multiplatform/)
+[![CMP](https://img.shields.io/badge/Compose-Multiplatform-4285F4?style=flat&logo=jetpackcompose)](https://www.jetbrains.com/lp/compose-multiplatform/)
+[![KMP](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=flat&logo=kotlin)](https://kotlinlang.org/docs/multiplatform.html)
 [![Android](https://img.shields.io/badge/Android-24%2B-3DDC84?style=flat&logo=android)](https://developer.android.com)
 [![iOS](https://img.shields.io/badge/iOS-14.1%2B-000000?style=flat&logo=apple)](https://www.apple.com/ios)
+[![Desktop](https://img.shields.io/badge/Desktop-JVM-orange?style=flat&logo=openjdk)](https://openjdk.org/)
 [![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AA-green.svg?style=flat)](https://www.w3.org/WAI/WCAG21/quickref/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -581,11 +583,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### ⭐ Star this repo if you like it!
 
-**Made with ❤️ using Kotlin Multiplatform & Compose**
+**Made with ❤️ using Compose Multiplatform (CMP)**
 
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
+![Compose](https://img.shields.io/badge/Compose-Multiplatform-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=ios&logoColor=white)
+![Desktop](https://img.shields.io/badge/Desktop-JVM-orange?style=for-the-badge&logo=openjdk&logoColor=white)
 
 </div>
 
