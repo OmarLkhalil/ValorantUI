@@ -5,5 +5,10 @@ target 'iosApp' do
 
   # Link the Kotlin Multiplatform framework
   pod 'ComposeApp', :path => '../composeApp'
+
+  # Uncomment to enable Firebase Crashlytics (requires GoogleService-Info.plist)
+  # pod 'Firebase/Core'
+  # pod 'Firebase/Crashlytics'
+  # pod 'Firebase/Analytics'
 end
 

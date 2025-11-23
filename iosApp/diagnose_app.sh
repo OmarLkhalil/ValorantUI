@@ -1,86 +1,54 @@
 #!/bin/bash
 
-# iOS App Diagnostic Script
-# Checks if app crashes and captures crash logs
+# Script to diagnose iOS app crash
+# Run this script from the iosApp directory
 
-set -e
-
-SIMULATOR_UDID="$1"
-BUNDLE_ID="com.larryyu.valorantui"
-
-if [ -z "$SIMULATOR_UDID" ]; then
-    echo "❌ Usage: $0 <SIMULATOR_UDID>"
-    exit 1
-fi
-
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔍 iOS App Diagnostic Check"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-echo "📱 Simulator: $SIMULATOR_UDID"
-echo "📦 Bundle ID: $BUNDLE_ID"
+echo "🔍 iOS App Crash Diagnostics"
+echo "=================================="
 echo ""
 
-# Boot simulator
-echo "🔌 Booting simulator..."
-xcrun simctl boot "$SIMULATOR_UDID" 2>/dev/null || echo "Already booted"
-sleep 2
+echo "1️⃣ Checking if simulator is running..."
+xcrun simctl list devices | grep "Booted"
+echo ""
 
-# Clear previous logs
-echo "🧹 Clearing previous crash logs..."
-rm -rf ~/Library/Logs/DiagnosticReports/${BUNDLE_ID}* 2>/dev/null || true
+echo "2️⃣ Building the app..."
+cd ..
+./gradlew :composeApp:embedAndSignAppleFrameworkForXcodeIosSimulatorArm64
+cd iosApp
+echo ""
 
-# Launch app
-echo "🚀 Launching app..."
-xcrun simctl launch --console "$SIMULATOR_UDID" "$BUNDLE_ID" &
+echo "3️⃣ Building Xcode project..."
+xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination "platform=iOS Simulator,OS=17.5,name=iPhone 15 Pro" -configuration Debug CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO -derivedDataPath build
+echo ""
+
+echo "4️⃣ Installing app to simulator..."
+SIMULATOR_ID=$(xcrun simctl list devices | grep "iPhone 15 Pro" | grep "17.5" | head -1 | grep -o '[A-Z0-9]\{8\}-[A-Z0-9]\{4\}-[A-Z0-9]\{4\}-[A-Z0-9]\{4\}-[A-Z0-9]\{12\}')
+echo "Simulator ID: $SIMULATOR_ID"
+
+xcrun simctl install $SIMULATOR_ID build/Build/Products/Debug-iphonesimulator/iosApp.app
+echo ""
+
+echo "5️⃣ Launching app and capturing logs..."
+xcrun simctl launch --console $SIMULATOR_ID com.larryyu.valorantui &
 LAUNCH_PID=$!
 
-# Wait and check if still running
-echo "⏳ Waiting 5 seconds..."
-sleep 5
+# Wait for 10 seconds to capture logs
+sleep 10
 
-# Check if app is running
-echo ""
-echo "🔍 Checking app status..."
-RUNNING=$(xcrun simctl spawn "$SIMULATOR_UDID" launchctl list | grep "$BUNDLE_ID" || echo "")
-
-if [ -z "$RUNNING" ]; then
-    echo "❌ App is NOT running! Crashed or failed to launch."
-    echo ""
-
-    # Check crash logs
-    echo "📋 Checking crash logs..."
-    CRASH_LOG=$(ls -t ~/Library/Logs/DiagnosticReports/${BUNDLE_ID}* 2>/dev/null | head -1 || echo "")
-
-    if [ -n "$CRASH_LOG" ]; then
-        echo "💥 Found crash log: $CRASH_LOG"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "CRASH LOG EXCERPT:"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        head -50 "$CRASH_LOG"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    else
-        echo "⚠️  No crash log found yet"
-    fi
-
-    # Check console logs
-    echo ""
-    echo "📋 Last console output:"
-    xcrun simctl spawn "$SIMULATOR_UDID" log show --predicate 'processImagePath contains "iosApp"' --last 30s 2>/dev/null || echo "No logs found"
-
-else
-    echo "✅ App is running successfully!"
-    echo "Process info: $RUNNING"
-fi
-
-# Terminate
-echo ""
-echo "🧹 Terminating app..."
-xcrun simctl terminate "$SIMULATOR_UDID" "$BUNDLE_ID" 2>/dev/null || echo "App already terminated"
+# Kill the launch process
+kill $LAUNCH_PID 2>/dev/null
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ Diagnostic check complete"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "6️⃣ Checking crash logs..."
+xcrun simctl spawn $SIMULATOR_ID log show --predicate 'process == "iosApp"' --last 2m
+
+echo ""
+echo "=================================="
+echo "✅ Diagnostics complete!"
+echo ""
+echo "If the app crashed, check the logs above for error messages."
+echo "Common issues:"
+echo "  - SQLite not linked: Check build.gradle.kts for linkerOpts.add(\"-lsqlite3\")"
+echo "  - Koin not initialized: Check KoinHelper.kt"
+echo "  - Database schema issues: Check ValorantDatabase.sq files"
 

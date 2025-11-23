@@ -38,6 +38,9 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+
+            // Link SQLite for iOS
+            linkerOpts.add("-lsqlite3")
         }
     }
 
@@ -139,6 +142,9 @@ kotlin {
             implementation(libs.ktor.darwin)
             // use native driver for iOS
             implementation(libs.sqldelight.native.driver)
+
+            // Firebase Crashlytics for iOS (via CocoaPods)
+            // Note: Firebase Crashlytics will be added via Podfile
         }
 
         // Desktop-only dependencies
