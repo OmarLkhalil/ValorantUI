@@ -9,7 +9,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Compose-Multiplatform-4285F4?style=flat&logo=jetpackcompose)](https://www.jetbrains.com/lp/compose-multiplatform/)
 [![Android](https://img.shields.io/badge/Android-24%2B-3DDC84?style=flat&logo=android)](https://developer.android.com)
-[![iOS](https://img.shields.io/badge/iOS-Coming%20Soon-000000?style=flat&logo=apple)](https://www.apple.com/ios)
+[![iOS](https://img.shields.io/badge/iOS-14.1%2B-000000?style=flat&logo=apple)](https://www.apple.com/ios)
 [![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AA-green.svg?style=flat)](https://www.w3.org/WAI/WCAG21/quickref/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -65,13 +65,19 @@ Valorant UI is a **Kotlin Multiplatform** mobile application that brings the wor
 
 ---
 
-### 🍎 iOS Version
+### 🍎 iOS
 
 <div align="center">
 
-**Coming Soon!** 🚀
+**Now Available!** 🎉
 
-iOS version is under development and will be available in the next release.
+iOS version is fully functional and ready to use!
+
+| Agents (Light) | Agents (Dark) | Agent Details | Gun Details |
+|:-:|:-:|:-:|:-:|
+| <img src="screenshots/agents_ligh_ios.jpeg" width="200"/> | <img src="screenshots/agent_dark_ios.jpeg" width="200"/> | <img src="screenshots/agent_details_ios.jpeg" width="200"/> | <img src="screenshots/gun_details_ios.jpeg" width="200"/> |
+
+**Built and tested on Desktop using [Codemagic CI/CD](https://codemagic.io/)** 🚀
 
 </div>
 
@@ -143,12 +149,18 @@ iOS version is under development and will be available in the next release.
 
 ### 🎯 Target Platforms
 - **Android** - Min SDK 24, Target SDK 36 ✅
-- **iOS** - Coming Soon 🚀
+- **iOS** - Min iOS 14.1+ ✅
 - **Desktop** - JVM support ✅
 
 ### 🔧 Development Tools
 - **[Napier 2.6.1](https://github.com/AAkira/Napier)** - Multiplatform logging
 - **[Multiplatform Settings 1.3.0](https://github.com/russhwolf/multiplatform-settings)** - Settings management
+
+### 🚀 CI/CD
+- **[Codemagic](https://codemagic.io/)** - iOS build and deployment pipeline
+  - Automated iOS framework builds
+  - Simulator testing on cloud
+  - Cross-platform CI/CD support
 
 ---
 
@@ -262,9 +274,26 @@ cd valorantui
 # Build Desktop App
 ./gradlew :composeApp:run
 
-# iOS (Coming Soon)
-./gradlew :composeApp:iosApp
+# Build iOS Framework
+./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+
+# Open iOS project in Xcode
+open iosApp/iosApp.xcodeproj
 ```
+
+### 🍎 iOS Development
+
+The iOS app was successfully built and tested on **Desktop** using [**Codemagic CI/CD**](https://codemagic.io/) platform.
+
+**Requirements for iOS development:**
+- macOS with Xcode installed
+- Kotlin Multiplatform Mobile plugin
+- CocoaPods (optional)
+
+**CI/CD Setup:**
+- Automated iOS builds via Codemagic
+- Simulator testing on cloud infrastructure
+- Distribution via App Store Connect (coming soon)
 
 ---
 
@@ -485,9 +514,9 @@ Making apps accessible ensures that **everyone**, regardless of ability, can:
 - [x] Comprehensive testing
 - [x] **Full WCAG 2.1 AA Accessibility compliance**
 - [x] **TalkBack and screen reader support**
+- [x] **iOS Support** - Full iOS implementation ✅
 
 ### v1.1.0 - Coming Soon 🚀
-- [ ] **iOS Support** - Full iOS implementation
 - [ ] Maps information
 - [ ] Competitive ranks system
 - [ ] Weapon comparison tool
