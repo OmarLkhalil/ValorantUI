@@ -1,4 +1,6 @@
 ENABLE_USER_SCRIPT_SANDBOXING = NO
 FRAMEWORK_SEARCH_PATHS = $(inherited) $(SRCROOT)/../composeApp/build/bin/iosSimulatorArm64/debugFramework
 OTHER_LDFLAGS = $(inherited) -framework ComposeApp
-
+TEAM_ID=
+BUNDLE_ID=com.larryyu.valorantui
+APP_NAME=ValorantUI
