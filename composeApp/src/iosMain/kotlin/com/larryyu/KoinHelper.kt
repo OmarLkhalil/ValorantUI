@@ -1,8 +1,17 @@
 package com.larryyu
 
-import com.larryyu.di.start
-import org.koin.core.KoinApplication
+import com.larryyu.di.initKoin
+import kotlin.experimental.ExperimentalObjCName
+import kotlin.native.ObjCName
 
-fun initKoin() {
-    KoinApplication.start()
+object KoinHelper {
+    fun doInitKoin() {
+        initKoin()
+    }
+
+    @OptIn(ExperimentalObjCName::class)
+    @ObjCName("doInitKoinFromSwift")
+    fun doInitKoinFromSwift() {
+        doInitKoin()
+    }
 }

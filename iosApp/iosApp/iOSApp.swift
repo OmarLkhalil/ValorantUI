@@ -1,10 +1,17 @@
 import SwiftUI
 import ComposeApp
 
+extension KoinHelper {
+    func doInitKoin() {
+        KoinHelper.doInitKoinFromSwift()
+    }
+}
+
 @main
 struct iOSApp: App {
     init() {
-        KoinHelperKt.initKoin()
+        KoinHelper().doInitKoin()
+        print("DEBUG: iOSApp - Koin initialized")
     }
 
     var body: some Scene {
