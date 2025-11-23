@@ -1,14 +1,8 @@
-import UIKit
 import SwiftUI
 import ComposeApp
 
 @main
 struct iOSApp: App {
-    init() {
-        // Initialize Koin for iOS
-        MainViewControllerKt.initKoinIos()
-    }
-
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -17,12 +11,9 @@ struct iOSApp: App {
 }
 
 struct ContentView: View {
-    @Environment(\.colorScheme) var colorScheme
-
     var body: some View {
         ComposeView()
-            .ignoresSa2feArea(.keyboard)
-            .preferredColorScheme(nil) // Allow system theme switching
+            .ignoresSafeArea(.keyboard)
     }
 }
 
@@ -31,8 +22,6 @@ struct ComposeView: UIViewControllerRepresentable {
         MainViewControllerKt.MainViewController()
     }
 
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        // Update for theme changes if needed
-    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
