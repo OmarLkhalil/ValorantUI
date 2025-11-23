@@ -6,9 +6,6 @@ target 'iosApp' do
   # Link the Kotlin Multiplatform framework
   pod 'ComposeApp', :path => '../composeApp'
 
-  # Firebase Crashlytics for crash reporting
-  pod 'FirebaseCore', '~> 10.19.0'
-  pod 'FirebaseCrashlytics', '~> 10.19.0'
-  pod 'FirebaseAnalytics', '~> 10.19.0'
+  # Firebase will be added back after CI/CD setup is complete
 end
 

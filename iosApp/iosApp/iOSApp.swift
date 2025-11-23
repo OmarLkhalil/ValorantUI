@@ -1,19 +1,9 @@
 import SwiftUI
 import ComposeApp
-import FirebaseCore
-import FirebaseCrashlytics
 
 @main
 struct iOSApp: App {
     init() {
-        // Initialize Firebase
-        print("🔥 Initializing Firebase...")
-        FirebaseApp.configure()
-        print("✅ Firebase initialized")
-
-        // Enable Crashlytics collection
-        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
-        print("📊 Crashlytics enabled")
 
         // Initialize Koin DI for iOS with error handling
         print("🔧 Initializing Koin DI...")
