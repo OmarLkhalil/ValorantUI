@@ -59,11 +59,12 @@ workflows:
             -derivedDataPath build
       - name: Take Screenshots
         script: |
-          # Use specific simulator ID from available devices
+          # Use specific simulator ID
           SIMULATOR_UDID="8014E13D-DF11-4689-9B55-08A818D29AD6"
+          BUNDLE_ID="com.larryyu.valorantui"
           
-          echo "Using simulator: iPhone 15 Pro (iOS 17.5)"
-          echo "UDID: $SIMULATOR_UDID"
+          echo "📱 Using simulator: iPhone 15 Pro (iOS 17.5)"
+          echo "🆔 UDID: $SIMULATOR_UDID"
           
           # Boot simulator
           xcrun simctl boot $SIMULATOR_UDID 2>/dev/null || echo "Already booted"
@@ -73,40 +74,40 @@ workflows:
           APP_PATH=$(find build -name "*.app" -type d | grep -v "Intermediates" | head -1)
           
           if [ -n "$APP_PATH" ]; then
-            echo "Found app at: $APP_PATH"
+            echo "✅ Found app at: $APP_PATH"
             
             # Install app
+            echo "📦 Installing app..."
             xcrun simctl install $SIMULATOR_UDID "$APP_PATH"
-            sleep 2
+            sleep 3
             
-            # Launch app
-            xcrun simctl launch $SIMULATOR_UDID com.larryyu.valorantui
-            sleep 5
-            
-            # Take screenshots
+            # Create screenshot directories
             mkdir -p screenshots/light screenshots/dark
             
-            # Light mode
-            xcrun simctl ui $SIMULATOR_UDID appearance light
-            sleep 2
-            xcrun simctl io $SIMULATOR_UDID screenshot screenshots/light/01_launch.png
-            sleep 2
-            xcrun simctl io $SIMULATOR_UDID screenshot screenshots/light/02_screen.png
+            # Make screenshot script executable
+            chmod +x iosApp/take_screenshots.swift
             
-            # Dark mode
-            xcrun simctl ui $SIMULATOR_UDID appearance dark
-            sleep 2
-            xcrun simctl launch $SIMULATOR_UDID com.larryyu.valorantui
-            sleep 3
-            xcrun simctl io $SIMULATOR_UDID screenshot screenshots/dark/01_launch.png
-            sleep 2
-            xcrun simctl io $SIMULATOR_UDID screenshot screenshots/dark/02_screen.png
+            echo ""
+            echo "📸 Taking screenshots in LIGHT mode..."
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            swift iosApp/take_screenshots.swift "$SIMULATOR_UDID" "$BUNDLE_ID" "screenshots/light" "light"
             
-            echo "Screenshots taken successfully (light + dark mode)"
-            ls -la screenshots/light/
-            ls -la screenshots/dark/
+            echo ""
+            echo "📸 Taking screenshots in DARK mode..."
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            swift iosApp/take_screenshots.swift "$SIMULATOR_UDID" "$BUNDLE_ID" "screenshots/dark" "dark"
+            
+            echo ""
+            echo "✅ All screenshots completed!"
+            echo ""
+            echo "📁 Light mode screenshots:"
+            ls -lh screenshots/light/ | tail -n +2
+            echo ""
+            echo "📁 Dark mode screenshots:"
+            ls -lh screenshots/dark/ | tail -n +2
+            
           else
-            echo "No app found to take screenshots"
+            echo "❌ No app found to take screenshots"
             echo "Available build outputs:"
             find build -type d -name "*.app" | head -10
           fi
