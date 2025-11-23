@@ -6,7 +6,7 @@ import ComposeApp
 struct iOSApp: App {
     init() {
         // Initialize Koin for iOS
-        KoinIosKt.initKoinIos()
+        MainViewControllerKt.initKoinIos()
     }
 
     var body: some Scene {
@@ -21,7 +21,7 @@ struct ContentView: View {
 
     var body: some View {
         ComposeView()
-            .ignoresSafeArea(.keyboard)
+            .ignoresSa2feArea(.keyboard)
             .preferredColorScheme(nil) // Allow system theme switching
     }
 }
