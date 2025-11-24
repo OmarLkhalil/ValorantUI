@@ -7,34 +7,31 @@ import com.larryyu.presentation.model.AbilityUiModel
 import com.larryyu.presentation.model.AgentDetailsUiModel
 import com.larryyu.presentation.model.AgentRoleDetailsUi
 
+
 fun AgentDetailsData.toUiModel(): AgentDetailsUiModel {
     return AgentDetailsUiModel(
-        id = uuid ?: "",
-        name = displayName ?: "Unknown Agent",
-        description = description ?: "No description available",
-        role = role?.toUiModel() ?: AgentRoleDetailsUi("Unknown", ""),
-        portraitUrl = fullPortraitV2 ?: fullPortrait ?: "",
-        backgroundUrl = background ?: "",
-        abilities = abilities?.map { it.toUiModel() } ?: emptyList(),
-        backgroundColors = backgroundGradientColors ?: emptyList()
+        agentId = uuid ?: "",
+        agentName = displayName ?: "Unknown Agent",
+        agentDescription = description ?: "No description available",
+        agentRole = role?.toUiModel() ?: AgentRoleDetailsUi("Unknown", ""),
+        agentImageUrl = fullPortrait ?: "",
+        agentAbilities = abilities?.map { it.toUiModel() } ?: emptyList()
     )
 }
 
 
 fun RoleDetails.toUiModel(): AgentRoleDetailsUi {
     return AgentRoleDetailsUi(
-        name = displayName ?: "Unknown",
-        iconUrl = displayIcon ?: ""
+        roleName = displayName ?: "Unknown",
+        roleIconUrl = displayIcon ?: ""
     )
 }
 
-
 fun AbilitiesItemDetails.toUiModel(): AbilityUiModel {
     return AbilityUiModel(
-        name = displayName ?: "Unknown Ability",
-        description = description ?: "No description",
-        iconUrl = displayIcon ?: "",
-        slot = slot ?: "unknown"
+        abilityName = displayName ?: "Unknown Ability",
+        abilityDescription = description ?: "No description",
+        abilityIconUrl = displayIcon ?: ""
     )
 }
 
