@@ -1,4 +1,5 @@
 package com.larryyu.ui.view
+
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -44,8 +45,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.larryyu.domain.model.AbilitiesItemDetails
-import com.larryyu.domain.model.AgentDetailsData
+import com.larryyu.presentation.model.AbilityUiModel
+import com.larryyu.presentation.model.AgentDetailsUiModel
 import com.larryyu.presentation.uistates.AgentDetailsIntent
 import com.larryyu.presentation.viewmodel.AgentDetailsViewModel
 import com.larryyu.ui.components.BackHandler
@@ -55,6 +56,7 @@ import com.larryyu.ui.components.HeaderText
 import com.larryyu.ui.components.calculateDominantColor
 import com.larryyu.ui.theme.Theme
 import org.koin.compose.koinInject
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentDetailsScreen(
@@ -71,13 +73,17 @@ fun AgentDetailsScreen(
     val surfaceColor = Theme.colors.surface
     val status by viewModel.state.collectAsState()
     var dominantColor by remember { mutableStateOf(surfaceColor) }
-    LaunchedEffect(status.agentDetails.fullPortrait) {
-        calculateDominantColor(
-            source = status.agentDetails.fullPortrait.orEmpty(),
-        ) { color ->
-            dominantColor = color
+
+    status.agentDetails?.let { agentDetails ->
+        LaunchedEffect(agentDetails.agentImageUrl) {
+            calculateDominantColor(
+                source = agentDetails.agentImageUrl,
+            ) { color ->
+                dominantColor = color
+            }
         }
     }
+
     Scaffold(
         modifier = Modifier.fillMaxSize().background(dominantColor),
         topBar = {
@@ -86,27 +92,29 @@ fun AgentDetailsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 HeaderText(
-                    text = status.agentDetails.displayName ?: "",
+                    text = status.agentDetails?.agentName ?: "",
                     modifier = Modifier.clickable { onBack() },
-                    contentDescription = "It's the Agent Name ${status.agentDetails.displayName}"
+                    contentDescription = "It's the Agent Name ${status.agentDetails?.agentName}"
                 )
             }
         },
         containerColor = dominantColor.copy(alpha = 0.9f)
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(it)) {
-            AgentDetailsCardComponent(
-                agent = status.agentDetails,
-                dominantColor = dominantColor,
-                animatedVisibilityScope = animatedVisibilityScope,
-                sharedTransitionScope = sharedTransitionScope
-            )
+            status.agentDetails?.let { agentDetails ->
+                AgentDetailsCardComponent(
+                    agent = agentDetails,
+                    dominantColor = dominantColor,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    sharedTransitionScope = sharedTransitionScope
+                )
+            }
         }
     }
 }
 @Composable
 fun AgentInfoDetailsComponent(
-    agent: AgentDetailsData,
+    agent: AgentDetailsUiModel,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -124,60 +132,60 @@ fun AgentInfoDetailsComponent(
         }
         item {
             DescriptionText(
-                text = agent.description.orEmpty(),
-                contentDescription = "Agent Description for ${agent.displayName}, it's Description is ${agent.description}"
+                text = agent.agentDescription,
+                contentDescription = "Agent Description for ${agent.agentName}, it's Description is ${agent.agentDescription}"
             )
         }
     }
 }
 @Composable
-fun AbilityItem(ability: AbilitiesItemDetails) {
+fun AbilityItem(ability: AbilityUiModel) {
     Column(
         horizontalAlignment = CenterHorizontally,
         modifier = Modifier.width(100.dp)
     ) {
         CoilImage(
-            url = ability.displayIcon,
-            contentDescription = "It's the ability Icon for ${ability.displayName}",
+            url = ability.abilityIconUrl,
+            contentDescription = "It's the ability Icon for ${ability.abilityName}",
             modifier = Modifier.size(50.dp)
         )
         HeaderText(
-            text = ability.displayName ?: "",
-            contentDescription = "It's the ability Name for ${ability.displayName}",
+            text = ability.abilityName,
+            contentDescription = "It's the ability Name for ${ability.abilityName}",
             modifier = Modifier,
             textStyle = Theme.typography.body12
         )
     }
 }
 @Composable
-fun AgentRoleRow(agent: AgentDetailsData) {
+fun AgentRoleRow(agent: AgentDetailsUiModel) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         CoilImage(
-            url = agent.role?.displayIcon,
-            contentDescription = "It's the Agent Role Icon for ${agent.role?.displayName}",
+            url = agent.agentRole.roleIconUrl,
+            contentDescription = "It's the Agent Role Icon for ${agent.agentRole.roleName}",
             modifier = Modifier.size(30.dp),
         )
         Spacer(modifier = Modifier.width(10.dp))
         DescriptionText(
-            text = agent.role?.displayName ?: "",
-            contentDescription = "It's the Agent Role Name for ${agent.role?.displayName}",
+            text = agent.agentRole.roleName,
+            contentDescription = "It's the Agent Role Name for ${agent.agentRole.roleName}",
             textStyle = Theme.typography.body16,
             color = Theme.colors.textPrimary
         )
     }
 }
 @Composable
-fun AgentAbilitiesRow(agent: AgentDetailsData) {
+fun AgentAbilitiesRow(agent: AgentDetailsUiModel) {
     LazyRow {
-        items(agent.abilities ?: emptyList()) {
-            AbilityItem(it)
+        items(agent.agentAbilities) { ability ->
+            AbilityItem(ability)
         }
     }
 }
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentDetailsCardComponent(
-    agent: AgentDetailsData,
+    agent: AgentDetailsUiModel,
     dominantColor: Color,
     animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope
@@ -195,24 +203,16 @@ fun AgentDetailsCardComponent(
         ), label = ""
     )
     Box(modifier = Modifier.fillMaxSize()) {
-        CoilImage(
-            url = agent.background,
-            contentDescription = "It's the Agent Background for ${agent.displayName}",
-            modifier = Modifier
-                .height(400.dp)
-                .padding(top = 50.dp)
-                .align(Alignment.TopCenter)
-        )
         with(sharedTransitionScope) {
             CoilImage(
-                url = agent.fullPortrait,
-                contentDescription = "It's the Agent Portrait for ${agent.displayName}",
+                url = agent.agentImageUrl,
+                contentDescription = "It's the Agent Portrait for ${agent.agentName}",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .size(width = 250.dp, height = 350.dp)
                     .align(Alignment.TopCenter)
                     .sharedElement(
-                        sharedContentState = rememberSharedContentState(key = agent.uuid ?: ""),
+                        sharedContentState = rememberSharedContentState(key = agent.agentId),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
                     .scale(scale)

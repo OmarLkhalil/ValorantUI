@@ -17,25 +17,20 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.larryyu.domain.model.GunsData
 import com.larryyu.ui.theme.Theme
-import com.larryyu.ui.view.gundetails.utils.extractCategory
-import com.larryyu.ui.view.gundetails.utils.getRarityName
 
 @Composable
 fun BasicInfoSection(
-    gun: GunsData,
+    weaponName: String,
+    weaponIconUrl: String,
     dominantColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val category = extractCategory(gun.assetPath)
-    val rarity = gun.contentTierUuid?.let { getRarityName(it) } ?: "Unknown"
-
     Card(
         modifier = modifier
             .fillMaxWidth()
             .semantics {
-                contentDescription = "Basic weapon information, Category: $category, Rarity: $rarity"
+                contentDescription = "Basic weapon information for $weaponName"
             },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -50,31 +45,15 @@ fun BasicInfoSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             InfoRow(
-                label = "Category",
-                value = extractCategory(gun.assetPath),
-                icon = "🎯"
+                label = "Weapon Name",
+                value = weaponName,
+                icon = "📌"
             )
-            gun.displayName?.let { name ->
-                InfoRow(
-                    label = "Display Name",
-                    value = name,
-                    icon = "📌"
-                )
-            }
-            gun.themeUuid?.let { theme ->
-                InfoRow(
-                    label = "Theme",
-                    value = theme.take(13) + "...",
-                    icon = "🎨"
-                )
-            }
-            gun.contentTierUuid?.let { tier ->
-                InfoRow(
-                    label = "Rarity",
-                    value = getRarityName(tier),
-                    icon = "⭐"
-                )
-            }
+            InfoRow(
+                label = "Icon URL",
+                value = if (weaponIconUrl.length > 30) weaponIconUrl.take(30) + "..." else weaponIconUrl,
+                icon = "🖼️"
+            )
         }
     }
 }

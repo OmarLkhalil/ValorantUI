@@ -26,13 +26,13 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.larryyu.domain.model.LevelsItem
+import com.larryyu.presentation.model.LevelUiModel
 import com.larryyu.ui.components.CoilImage
 import com.larryyu.ui.theme.Theme
 
 @Composable
 fun LevelsColumn(
-    levels: List<LevelsItem>,
+    levels: List<LevelUiModel>,
     dominantColor: Color,
     modifier: Modifier = Modifier
 ) {
@@ -82,26 +82,13 @@ fun LevelsColumn(
 }
 @Composable
 private fun LevelCard(
-    level: LevelsItem,
+    level: LevelUiModel,
     dominantColor: Color,
     levelNumber: Int = 1
 ) {
-    val levelName = level.displayName ?: "Unknown Level"
-    val levelItemText = level.levelItem?.toString()
-        ?.replace("\"", "")
-        ?.replace("EEquippableSkinLevelItem::", "")
-        ?.replace("_", " ")
-    val hasVideo = level.streamedVideo?.toString()?.replace("\"", "") != "null"
+    val levelName = level.levelName
 
-    val contentDesc = buildString {
-        append("Level $levelNumber, $levelName")
-        if (levelItemText != null && levelItemText != "null") {
-            append(", Feature: $levelItemText")
-        }
-        if (hasVideo) {
-            append(", Video preview available")
-        }
-    }
+    val contentDesc = "Level $levelNumber, $levelName"
 
     Box(
         modifier = Modifier
@@ -143,10 +130,10 @@ private fun LevelCard(
                         .background(dominantColor.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    level.displayIcon?.let { iconUrl ->
+                    level.levelIconUrl?.let { iconUrl ->
                         CoilImage(
                             url = iconUrl,
-                            contentDescription = level.displayName ?: "Level",
+                            contentDescription = level.levelName,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(8.dp)
@@ -179,53 +166,25 @@ private fun LevelCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = level.displayName ?: "Unknown Level",
+                    text = level.levelName,
                     color = Theme.colors.textPrimary,
                     style = Theme.typography.body16,
                     fontWeight = FontWeight.Bold
                 )
-                level.levelItem?.let { item ->
-                    val itemText = item.toString()
-                        .replace("\"", "")
-                        .replace("EEquippableSkinLevelItem::", "")
-                        .replace("_", " ")
-                    if (itemText != "null") {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "✨",
-                                style = Theme.typography.body12
-                            )
-                            Text(
-                                text = itemText,
-                                color = Theme.colors.textSecondary,
-                                style = Theme.typography.body12,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-                }
-                level.streamedVideo?.let { video ->
-                    val videoUrl = video.toString().replace("\"", "")
-                    if (videoUrl != "null") {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "🎬",
-                                style = Theme.typography.body8
-                            )
-                            Text(
-                                text = "Preview Available",
-                                color = Theme.colors.textSecondary,
-                                style = Theme.typography.body8,
-                                fontWeight = FontWeight.Light
-                            )
-                        }
-                    }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "✨",
+                        style = Theme.typography.body12
+                    )
+                    Text(
+                        text = "Upgrade Level $levelNumber",
+                        color = Theme.colors.textSecondary,
+                        style = Theme.typography.body12,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
         }

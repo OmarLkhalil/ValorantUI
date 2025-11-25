@@ -1,4 +1,5 @@
 package com.larryyu.ui.view
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -56,7 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
-import com.larryyu.domain.model.AgentsModel
+import com.larryyu.presentation.model.AgentUiModel
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
 import com.larryyu.presentation.viewmodel.AgentsViewModel
@@ -65,22 +66,26 @@ import com.larryyu.ui.components.calculateDominantColor
 import com.larryyu.ui.components.clipToFraction
 import com.larryyu.ui.theme.Theme
 import com.larryyu.ui.theme.ThemeViewModel
+import com.larryyu.ui.theme.ValorantUITheme
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import valorantui.composeapp.generated.resources.Res
 import valorantui.composeapp.generated.resources.arrow
 import valorantui.composeapp.generated.resources.valorant
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentsScreen(
     viewModel: AgentsViewModel = koinInject(),
 ) {
     val agentsState by viewModel.agentsState.collectAsState()
-    var selectedAgent by remember { mutableStateOf<AgentsModel?>(null) }
+    var selectedAgent by remember { mutableStateOf<AgentUiModel?>(null) }
+
     LaunchedEffect(Unit) {
         viewModel.sendIntent(AgentsIntent.FetchAgents)
     }
+
     SharedTransitionLayout {
         AnimatedContent(
             targetState = selectedAgent,
@@ -98,7 +103,7 @@ fun AgentsScreen(
                 )
             } else {
                 AgentDetailsScreen(
-                    agentId = targetAgent.uuid,
+                    agentId = targetAgent.agentId,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this,
                     onBack = { selectedAgent = null }
@@ -107,6 +112,7 @@ fun AgentsScreen(
         }
     }
 }
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentsGridRoute(
@@ -114,17 +120,19 @@ fun AgentsGridRoute(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: ThemeViewModel = koinInject(),
-    onAgentClick: (AgentsModel) -> Unit
+    onAgentClick: (AgentUiModel) -> Unit
 ) {
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
     val fraction = remember { Animatable(if (isDarkTheme) 1f else 0f) }
     val scope = rememberCoroutineScope()
     var isAnimating by remember { mutableStateOf(false) }
+
     LaunchedEffect(isDarkTheme) {
         if (!isAnimating) {
             fraction.snapTo(if (isDarkTheme) 1f else 0f)
         }
     }
+
     AgentsGridContent(
         agentsState = agentsState,
         sharedTransitionScope = sharedTransitionScope,
@@ -143,9 +151,24 @@ fun AgentsGridRoute(
                         targetValue = target,
                         animationSpec = keyframes {
                             durationMillis = 2000
-                            (start + (target - start) * 0.30f) at 400 using CubicBezierEasing(0.42f, 0.0f, 0.58f, 1.0f)
-                            (start + (target - start) * 0.70f) at 1200 using CubicBezierEasing(0.42f, 0.0f, 0.58f, 1.0f)
-                            (start + (target - start) * 0.95f) at 1700 using CubicBezierEasing(0.42f, 0.0f, 0.58f, 1.0f)
+                            (start + (target - start) * 0.30f) at 400 using CubicBezierEasing(
+                                0.42f,
+                                0.0f,
+                                0.58f,
+                                1.0f
+                            )
+                            (start + (target - start) * 0.70f) at 1200 using CubicBezierEasing(
+                                0.42f,
+                                0.0f,
+                                0.58f,
+                                1.0f
+                            )
+                            (start + (target - start) * 0.95f) at 1700 using CubicBezierEasing(
+                                0.42f,
+                                0.0f,
+                                0.58f,
+                                1.0f
+                            )
                             target at 2000 using FastOutSlowInEasing
                         }
                     )
@@ -156,6 +179,7 @@ fun AgentsGridRoute(
         }
     )
 }
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentsGridContent(
@@ -165,12 +189,12 @@ fun AgentsGridContent(
     isDarkTheme: Boolean,
     animationFraction: Float,
     isAnimating: Boolean,
-    onAgentClick: (AgentsModel) -> Unit,
+    onAgentClick: (AgentUiModel) -> Unit,
     onAnimateClick: () -> Unit
 ) {
     if (isAnimating) {
         Box(Modifier.fillMaxSize()) {
-            com.larryyu.ui.theme.ValorantUITheme(isDark = false) {
+            ValorantUITheme(isDark = false) {
                 AgentsGridScaffold(
                     agentsState = agentsState,
                     sharedTransitionScope = sharedTransitionScope,
@@ -184,7 +208,7 @@ fun AgentsGridContent(
                     .matchParentSize()
                     .clipToFraction(animationFraction)
             ) {
-                com.larryyu.ui.theme.ValorantUITheme(isDark = true) {
+                ValorantUITheme(isDark = true) {
                     AgentsGridScaffold(
                         agentsState = agentsState,
                         sharedTransitionScope = sharedTransitionScope,
@@ -196,7 +220,7 @@ fun AgentsGridContent(
             }
         }
     } else {
-        com.larryyu.ui.theme.ValorantUITheme(isDark = isDarkTheme) {
+        ValorantUITheme(isDark = isDarkTheme) {
             AgentsGridScaffold(
                 agentsState = agentsState,
                 sharedTransitionScope = sharedTransitionScope,
@@ -207,13 +231,14 @@ fun AgentsGridContent(
         }
     }
 }
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun AgentsGridScaffold(
     agentsState: AgentsUIState,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onAgentClick: (AgentsModel) -> Unit,
+    onAgentClick: (AgentUiModel) -> Unit,
     onAnimateClick: () -> Unit
 ) {
     Scaffold(
@@ -232,17 +257,19 @@ private fun AgentsGridScaffold(
                     Modifier.align(Alignment.Center),
                     color = Theme.colors.textPrimary
                 )
+
                 agentsState.error != null -> Text(
                     text = agentsState.error,
                     color = Theme.colors.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
+
                 else -> LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     contentPadding = PaddingValues(8.dp)
                 ) {
-                    items(agentsState.agents, key = { it.uuid }) { agent ->
+                    items(agentsState.agents, key = { it.agentId }) { agent ->
                         AgentCard(
                             agent = agent,
                             sharedTransitionScope = sharedTransitionScope,
@@ -255,6 +282,7 @@ private fun AgentsGridScaffold(
         }
     }
 }
+
 @Composable
 fun AgentsTopBar(
     onAnimateClick: () -> Unit,
@@ -285,10 +313,11 @@ fun AgentsTopBar(
         )
     }
 }
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AgentCard(
-    agent: AgentsModel,
+    agent: AgentUiModel,
     animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope,
     onItemClick: (String) -> Unit
@@ -306,8 +335,8 @@ fun AgentCard(
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
-    LaunchedEffect(agent.fullPortrait) {
-        calculateDominantColor(source = agent.fullPortrait.orEmpty()) { color ->
+    LaunchedEffect(agent.agentImageUrl) {
+        calculateDominantColor(source = agent.agentImageUrl) { color ->
             dominantColor = color
         }
     }
@@ -339,13 +368,13 @@ fun AgentCard(
                         )
                     )
                 )
-                .clickable { onItemClick(agent.uuid) }
+                .clickable { onItemClick(agent.agentId) }
                 .height(120.dp)
                 .width(130.dp),
         )
         with(sharedTransitionScope) {
             SubcomposeAsyncImage(
-                model = agent.fullPortrait,
+                model = agent.agentImageUrl,
                 contentDescription = null,
                 loading = {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -360,7 +389,7 @@ fun AgentCard(
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .sharedElement(
-                        sharedContentState = rememberSharedContentState(key = agent.uuid),
+                        sharedContentState = rememberSharedContentState(key = agent.agentId),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
                     .height(190.dp)
@@ -386,20 +415,21 @@ fun AgentCard(
         )
     }
 }
+
 @Composable
-fun AgentInfo(agent: AgentsModel, modifier: Modifier) {
+fun AgentInfo(agent: AgentUiModel, modifier: Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         DescriptionText(
-            text = agent.displayName.orEmpty(),
-            contentDescription = "It's an Agent Name ${agent.displayName}",
+            text = agent.agentName,
+            contentDescription = "It's an Agent Name ${agent.agentName}",
             color = Theme.colors.textPrimary
         )
         DescriptionText(
-            text = agent.role?.displayName.orEmpty(),
-            contentDescription = "It's an Agent Description ${agent.role?.displayName}"
+            text = agent.agentRole,
+            contentDescription = "It's an Agent Description ${agent.agentRole}"
         )
     }
 }

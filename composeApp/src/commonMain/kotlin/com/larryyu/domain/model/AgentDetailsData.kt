@@ -1,5 +1,4 @@
 package com.larryyu.domain.model
-import com.larryyu.data.model.RecruitmentResponseBody
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.JsonElement

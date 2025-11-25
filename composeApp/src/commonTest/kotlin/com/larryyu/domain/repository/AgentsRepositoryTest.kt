@@ -1,8 +1,9 @@
 package com.larryyu.domain.repository
+
 import com.larryyu.domain.entity.BaseResponse
 import com.larryyu.domain.model.AgentDetailsData
-import com.larryyu.domain.model.AgentsModel
-import com.larryyu.domain.model.Role
+import com.larryyu.domain.model.AgentsResponseModel
+import com.larryyu.domain.model.AgentsRoleModel
 import com.larryyu.domain.utils.DataState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -54,7 +55,7 @@ class AgentsRepositoryTest {
     fun `repository handles null values gracefully`() = runTest {
         val mockRepo = FakeAgentsRepositoryForTest()
         val agentsWithNulls = listOf(
-            AgentsModel(
+            AgentsResponseModel(
                 uuid = "1",
                 displayName = null,
                 fullPortrait = null,
@@ -69,6 +70,7 @@ class AgentsRepositoryTest {
         assertNotNull(agents)
         assertNotNull(agents[0])
     }
+
     @Test
     fun `insertAgentsToLocalDatabase stores agents`() = runTest {
         val mockRepo = FakeAgentsRepositoryForTest()
@@ -81,36 +83,43 @@ class AgentsRepositoryTest {
         assertEquals(2, cached.size)
         assertEquals("Jett", cached[0].displayName)
     }
-    private fun createMockAgent(uuid: String, displayName: String) = AgentsModel(
+
+    private fun createMockAgent(uuid: String, displayName: String) = AgentsResponseModel(
         uuid = uuid,
         displayName = displayName,
         fullPortrait = "portrait.png",
-        role = Role(displayName = "Duelist"),
+        role = AgentsRoleModel(displayName = "Duelist"),
         fullPortraitV2 = "portraitv2.png"
     )
 }
+
 class FakeAgentsRepositoryForTest : AgentsRepo {
-    private var agents: List<AgentsModel> = emptyList()
-    private var cachedAgents: List<AgentsModel> = emptyList()
+    private var agents: List<AgentsResponseModel> = emptyList()
+    private var cachedAgents: List<AgentsResponseModel> = emptyList()
     private var agentDetails: AgentDetailsData? = null
     private var error: String? = null
-    fun setAgents(agentsList: List<AgentsModel>) {
+
+    fun setAgents(agentsList: List<AgentsResponseModel>) {
         agents = agentsList
         error = null
     }
-    fun setCachedAgents(agentsList: List<AgentsModel>) {
+
+    fun setCachedAgents(agentsList: List<AgentsResponseModel>) {
         cachedAgents = agentsList
     }
+
     fun setAgentDetailsData(details: AgentDetailsData) {
         agentDetails = details
         error = null
     }
+
     fun setError(errorMessage: String) {
         error = errorMessage
         agents = emptyList()
         agentDetails = null
     }
-    override suspend fun getAgents(): Flow<DataState<BaseResponse<List<AgentsModel>>>> = flow {
+
+    override suspend fun getAgents(): Flow<DataState<BaseResponse<List<AgentsResponseModel>>>> = flow {
         error?.let {
             emit(DataState.Error(Exception(it)))
         } ?: emit(DataState.Success(BaseResponse(data = agents)))
@@ -122,10 +131,12 @@ class FakeAgentsRepositoryForTest : AgentsRepo {
             emit(DataState.Success(BaseResponse(data = it)))
         } ?: emit(DataState.Success(BaseResponse(data = AgentDetailsData())))
     }
-    override suspend fun getAgentsFromLocalDatabase(): List<AgentsModel> {
+
+    override suspend fun getAgentsFromLocalDatabase(): List<AgentsResponseModel> {
         return cachedAgents
     }
-    override suspend fun insertAgentsToLocalDatabase(agents: List<AgentsModel>) {
+
+    override suspend fun insertAgentsToLocalDatabase(agents: List<AgentsResponseModel>) {
         cachedAgents = agents
     }
 }

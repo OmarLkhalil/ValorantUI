@@ -1,10 +1,10 @@
 package com.larryyu.presentation.viewmodel
+
 import com.larryyu.domain.repository.AgentsRepo
 import com.larryyu.domain.utils.DataState
 import com.larryyu.presentation.mapper.toUiModels
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
-import com.larryyu.ui.components.extensions.EventFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,26 +39,24 @@ class AgentsViewModel(
                     AgentsIntent.FetchAgents, AgentsIntent.RefreshAgents -> {
                         loadAgents()
                     }
-                    is AgentsIntent.OpenDetails -> {
-                        // Navigate to agent details screen
-                        navigateToDetails(agentIntent.agentId)
-                    }
+//                    is AgentsIntent.OpenDetails -> {
+//                        navigateToDetails(agentIntent.agentId)
+//                    }
                 }
             }
         }
     }
-    private val _navigationEvent = EventFlow<String>()
-    val navigationEvent = _navigationEvent.events
-    fun navigateToDetails(agentId: String) {
-        viewModelScope.launch {
-            _navigationEvent.emit(agentId)
-        }
-    }
+//    private val _navigationEvent = EventFlow<String>()
+//    val navigationEvent = _navigationEvent.events
+//    fun navigateToDetails(agentId: String) {
+//        viewModelScope.launch {
+//            _navigationEvent.emit(agentId)
+//        }
+//    }
     private fun loadAgents() = launchAgentsViewModelScope {
         agentsRepo.getAgents().collect { result ->
             when (result) {
                 is DataState.Success -> {
-                    // Map domain models to UI models
                     val domainAgents = result.data.data ?: emptyList()
                     val uiAgents = domainAgents.toUiModels()
 
@@ -82,7 +80,6 @@ class AgentsViewModel(
                     )
                 }
                 is DataState.Idle -> {
-                    // Reset to idle state
                     updateAgentsUiState(_agentsState.value.copy(isLoading = false))
                 }
             }

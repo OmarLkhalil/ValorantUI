@@ -30,12 +30,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.larryyu.domain.model.ChromasItem
+import com.larryyu.presentation.model.ChromaUiModel
 import com.larryyu.ui.components.CoilImage
 import com.larryyu.ui.theme.Theme
+
 @Composable
 fun SkinsRow(
-    chromas: List<ChromasItem>,
+    chromas: List<ChromaUiModel>,
     dominantColor: Color,
     onSkinClick: (String?) -> Unit,
     modifier: Modifier = Modifier
@@ -82,7 +83,7 @@ fun SkinsRow(
                         chroma = chroma,
                         dominantColor = dominantColor,
                         onClick = {
-                            val imageUrl = chroma.fullRender ?: chroma.displayIcon?.toString()
+                            val imageUrl = chroma.chromaFullRender ?: chroma.chromaImageUrl
                             onSkinClick(imageUrl)
                         }
                     )
@@ -91,15 +92,16 @@ fun SkinsRow(
         }
     }
 }
+
 @Composable
 private fun SkinCard(
-    chroma: ChromasItem,
+    chroma: ChromaUiModel,
     dominantColor: Color,
     onClick: () -> Unit
 ) {
-    val skinName = chroma.displayName ?: "Unknown Skin"
-    val hasPreview = (chroma.fullRender ?: chroma.displayIcon?.toString()) != null &&
-                     (chroma.fullRender ?: chroma.displayIcon?.toString()) != "null"
+    val skinName = chroma.chromaName
+    val hasPreview = (chroma.chromaFullRender ?: chroma.chromaImageUrl) != null &&
+                     (chroma.chromaFullRender ?: chroma.chromaImageUrl) != "null"
 
     Box(
         modifier = Modifier
@@ -141,7 +143,7 @@ private fun SkinCard(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(12.dp)
             ) {
-                val imageUrl = chroma.fullRender ?: chroma.displayIcon?.toString()
+                val imageUrl = chroma.chromaFullRender ?: chroma.chromaImageUrl
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -153,7 +155,7 @@ private fun SkinCard(
                     if (imageUrl != null && imageUrl != "null") {
                         CoilImage(
                             url = imageUrl,
-                            contentDescription = chroma.displayName ?: "Skin",
+                            contentDescription = chroma.chromaName,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(8.dp)
@@ -176,7 +178,7 @@ private fun SkinCard(
                     }
                 }
                 Text(
-                    text = chroma.displayName ?: "Unknown Skin",
+                    text = chroma.chromaName,
                     color = Theme.colors.textPrimary,
                     style = Theme.typography.body12,
                     textAlign = TextAlign.Center,

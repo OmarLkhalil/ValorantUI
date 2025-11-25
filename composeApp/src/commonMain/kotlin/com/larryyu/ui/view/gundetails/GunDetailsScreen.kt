@@ -31,7 +31,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.larryyu.domain.model.GunsData
+import com.larryyu.presentation.model.WeaponUiModel
 import com.larryyu.ui.components.BackHandler
 import com.larryyu.ui.components.calculateDominantColor
 import com.larryyu.ui.theme.Theme
@@ -47,7 +47,7 @@ import valorantui.composeapp.generated.resources.arrow
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun GunDetailsScreen(
-    gun: GunsData,
+    gun: WeaponUiModel,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onBack: () -> Unit
@@ -56,9 +56,9 @@ fun GunDetailsScreen(
     val surfaceColor = Theme.colors.surface
     var dominantColor by remember { mutableStateOf(surfaceColor) }
 
-    LaunchedEffect(gun.displayIcon) {
+    LaunchedEffect(gun.weaponIconUrl) {
         calculateDominantColor(
-            source = gun.displayIcon.orEmpty(),
+            source = gun.weaponIconUrl.ifEmpty { "" },
         ) { color ->
             dominantColor = color
         }
@@ -70,12 +70,12 @@ fun GunDetailsScreen(
                 title = {
                     with(sharedTransitionScope) {
                         Text(
-                            text = gun.displayName ?: "Gun Details",
+                            text = gun.weaponName,
                             color = Theme.colors.textPrimary,
                             style = Theme.typography.headline18,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.sharedElement(
-                                rememberSharedContentState(key = "gun-name-${gun.uuid}"),
+                                rememberSharedContentState(key = "gun-name-${gun.weaponId}"),
                                 animatedVisibilityScope = animatedVisibilityScope
                             )
                         )
@@ -122,12 +122,12 @@ fun GunDetailsScreen(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun GunDetailsContent(
-    gun: GunsData,
+    gun: WeaponUiModel,
     dominantColor: Color,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    var selectedImageUrl by remember { mutableStateOf(gun.displayIcon) }
+    var selectedImageUrl by remember { mutableStateOf<String?>(gun.weaponIconUrl) }
     val allChromas = remember(gun.skins) {
         gun.skins?.flatMap { skin ->
             skin?.chromas?.filterNotNull() ?: emptyList()
@@ -142,7 +142,7 @@ private fun GunDetailsContent(
         modifier = Modifier
             .fillMaxSize()
             .semantics {
-                contentDescription = "${gun.displayName ?: "Weapon"} details screen, scroll to view all information"
+                contentDescription = "${gun.weaponName} details screen, scroll to view all information"
             },
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -150,8 +150,8 @@ private fun GunDetailsContent(
         item {
             RotatableGunImage(
                 imageUrl = selectedImageUrl,
-                gunUuid = gun.uuid,
-                gunName = gun.displayName,
+                gunUuid = gun.weaponId,
+                gunName = gun.weaponName,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope
             )
@@ -160,15 +160,15 @@ private fun GunDetailsContent(
             item {
                 SectionTitle(text = "Available Skins")
             }
-            item {
-                SkinsRow(
-                    chromas = allChromas,
-                    dominantColor = dominantColor,
-                    onSkinClick = { chromaImageUrl: String? ->
-                        selectedImageUrl = chromaImageUrl
-                    }
-                )
-            }
+        item {
+            SkinsRow(
+                chromas = allChromas,
+                dominantColor = dominantColor,
+                onSkinClick = { chromaImageUrl ->
+                    selectedImageUrl = chromaImageUrl
+                }
+            )
+        }
         }
         item {
             Spacer(modifier = Modifier.height(8.dp))
@@ -176,7 +176,8 @@ private fun GunDetailsContent(
         }
         item {
             BasicInfoSection(
-                gun = gun,
+                weaponName = gun.weaponName,
+                weaponIconUrl = gun.weaponIconUrl,
                 dominantColor = dominantColor
             )
         }
