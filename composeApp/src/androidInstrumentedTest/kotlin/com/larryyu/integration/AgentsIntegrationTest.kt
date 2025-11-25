@@ -14,9 +14,9 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.larryyu.domain.model.AgentDetailsData
-import com.larryyu.domain.model.AgentsModel
-import com.larryyu.domain.model.Role
+import com.larryyu.presentation.model.AgentUiModel
+import com.larryyu.presentation.model.AgentDetailsUiModel
+import com.larryyu.presentation.model.AgentRoleDetailsUi
 import com.larryyu.ui.theme.AppTheme
 import org.junit.Rule
 import org.junit.Test
@@ -39,7 +39,7 @@ class AgentsIntegrationTest {
                     AgentsListScreen(
                         agents = agents,
                         onAgentClick = { agent ->
-                            selectedAgentId = agent.uuid
+                            selectedAgentId = agent.agentId
                             showDetails = true
                         }
                     )
@@ -65,7 +65,7 @@ class AgentsIntegrationTest {
             AppTheme {
                 if (isOnDetailScreen) {
                     AgentDetailsScreen(
-                        agentId = agent.uuid,
+                        agentId = agent.agentId,
                         onBackClick = { isOnDetailScreen = false }
                     )
                 } else {
@@ -97,8 +97,8 @@ class AgentsIntegrationTest {
                     AgentsListScreen(
                         agents = agents,
                         onAgentClick = { agent ->
-                            viewedAgents.add(agent.displayName ?: "")
-                            selectedAgent = agent.uuid
+                            viewedAgents.add(agent.agentName)
+                            selectedAgent = agent.agentId
                         }
                     )
                 } else {
@@ -137,7 +137,7 @@ class AgentsIntegrationTest {
                         agents = agents,
                         searchQuery = searchQuery,
                         onSearchChange = { searchQuery = it },
-                        onAgentClick = { agent -> selectedAgent = agent.uuid }
+                        onAgentClick = { agent -> selectedAgent = agent.agentId }
                     )
                 } else {
                     AgentDetailsScreen(
@@ -158,7 +158,7 @@ class AgentsIntegrationTest {
     }
     @Test
     fun userFlow_emptyState_handledGracefully() {
-        val agents = emptyList<AgentsModel>()
+        val agents = emptyList<AgentUiModel>()
         composeTestRule.setContent {
             AppTheme {
                 AgentsListScreen(
@@ -184,7 +184,7 @@ class AgentsIntegrationTest {
                     )
                 } else {
                     AgentDetailsScreen(
-                        agentId = agent.uuid,
+                        agentId = agent.agentId,
                         onBackClick = { showDetails = false }
                     )
                 }
@@ -200,18 +200,17 @@ class AgentsIntegrationTest {
             .onNodeWithText("Jett")
             .assertIsDisplayed()
     }
-    private fun createMockAgent(uuid: String, displayName: String) = AgentsModel(
-        uuid = uuid,
-        displayName = displayName,
-        fullPortrait = "https://example.com/portrait.png",
-        role = Role(displayName = "Duelist"),
-        fullPortraitV2 = "https://example.com/portrait-v2.png"
+    private fun createMockAgent(uuid: String, displayName: String) = AgentUiModel(
+        agentId = uuid,
+        agentName = displayName,
+        agentImageUrl = "https://example.com/portrait.png",
+        agentRole = "Duelist"
     )
 }
 @Composable
 private fun AgentsListScreen(
-    agents: List<AgentsModel>,
-    onAgentClick: (AgentsModel) -> Unit
+    agents: List<AgentUiModel>,
+    onAgentClick: (AgentUiModel) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -222,7 +221,7 @@ private fun AgentsListScreen(
     ) {
         items(
             items = agents,
-            key = { it.uuid }
+            key = { it.agentId }
         ) { agent ->
             Card(
                 modifier = Modifier
@@ -231,7 +230,7 @@ private fun AgentsListScreen(
                     .clickable { onAgentClick(agent) }
             ) {
                 Text(
-                    text = agent.displayName ?: "",
+                    text = agent.agentName,
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -240,10 +239,10 @@ private fun AgentsListScreen(
 }
 @Composable
 private fun AgentsListWithSearch(
-    agents: List<AgentsModel>,
+    agents: List<AgentUiModel>,
     searchQuery: String,
     onSearchChange: (String) -> Unit,
-    onAgentClick: (AgentsModel) -> Unit
+    onAgentClick: (AgentUiModel) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         TextField(
@@ -255,7 +254,7 @@ private fun AgentsListWithSearch(
             placeholder = { Text("Search agents...") }
         )
         val filteredAgents = agents.filter {
-            it.displayName?.contains(searchQuery, ignoreCase = true) == true
+            it.agentName.contains(searchQuery, ignoreCase = true)
         }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -265,7 +264,7 @@ private fun AgentsListWithSearch(
         ) {
             items(
                 items = filteredAgents,
-                key = { it.uuid }
+                key = { it.agentId }
             ) { agent ->
                 Card(
                     modifier = Modifier
@@ -274,7 +273,7 @@ private fun AgentsListWithSearch(
                         .clickable { onAgentClick(agent) }
                 ) {
                     Text(
-                        text = agent.displayName ?: "",
+                        text = agent.agentName,
                         modifier = Modifier.padding(16.dp)
                     )
                 }

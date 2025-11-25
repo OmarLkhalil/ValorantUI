@@ -38,7 +38,7 @@ class AgentDetailsViewModelTest {
     fun `initial state should be empty agent details`() = runTest {
         val initialState = viewModel.state.value
         assertFalse(initialState.isLoading, "Initial loading should be false")
-        assertTrue(initialState.agentDetails?.agentName?.isEmpty() ?: true, "Display name should be empty")
+        assertNull(initialState.agentDetails, "Agent details should be null initially")
         assertNull(initialState.error, "Error should be null")
     }
 

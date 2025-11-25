@@ -15,8 +15,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.larryyu.domain.model.AgentsModel
-import com.larryyu.domain.model.Role
+import com.larryyu.presentation.model.AgentUiModel
 import com.larryyu.ui.theme.AppTheme
 import org.junit.Rule
 import org.junit.Test
@@ -28,7 +27,7 @@ class AgentsScreenComposeTest {
     @Test
     fun agentsScreen_showsLoadingIndicator_whenLoading() {
         val isLoading = true
-        val agents = emptyList<AgentsModel>()
+        val agents = emptyList<AgentUiModel>()
         composeTestRule.setContent {
             AppTheme {
                 AgentsGridContent(
@@ -82,7 +81,7 @@ class AgentsScreenComposeTest {
                 AgentsGridContent(
                     agents = listOf(agent),
                     isLoading = false,
-                    onAgentClick = { clickedAgentId = it.uuid }
+                    onAgentClick = { clickedAgentId = it.agentId }
                 )
             }
         }
@@ -93,7 +92,7 @@ class AgentsScreenComposeTest {
     }
     @Test
     fun agentsScreen_displaysEmptyState_whenNoAgents() {
-        val agents = emptyList<AgentsModel>()
+        val agents = emptyList<AgentUiModel>()
         val isLoading = false
         composeTestRule.setContent {
             AppTheme {
@@ -124,7 +123,7 @@ class AgentsScreenComposeTest {
         }
         agents.forEach { agent ->
             composeTestRule
-                .onNodeWithText(agent.displayName ?: "")
+                .onNodeWithText(agent.agentName)
                 .assertExists()
         }
     }
@@ -186,7 +185,7 @@ class AgentsScreenComposeTest {
                 AgentsGridContent(
                     agents = agents,
                     isLoading = false,
-                    onAgentClick = { agent -> clickedAgents.add(agent.uuid) }
+                    onAgentClick = { agent -> clickedAgents.add(agent.agentId) }
                 )
             }
         }
@@ -218,19 +217,18 @@ class AgentsScreenComposeTest {
         uuid: String,
         displayName: String,
         roleName: String = "Duelist"
-    ) = AgentsModel(
-        uuid = uuid,
-        displayName = displayName,
-        fullPortrait = "https://example.com/portrait.png",
-        role = Role(displayName = roleName),
-        fullPortraitV2 = "https://example.com/portrait-v2.png"
+    ) = AgentUiModel(
+        agentId = uuid,
+        agentName = displayName,
+        agentImageUrl = "https://example.com/portrait.png",
+        agentRole = roleName
     )
 }
 @Composable
 private fun AgentsGridContent(
-    agents: List<AgentsModel>,
+    agents: List<AgentUiModel>,
     isLoading: Boolean,
-    onAgentClick: (AgentsModel) -> Unit
+    onAgentClick: (AgentUiModel) -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -254,7 +252,7 @@ private fun AgentsGridContent(
                 ) {
                     items(
                         items = agents,
-                        key = { it.uuid }
+                        key = { it.agentId }
                     ) { agent ->
                         AgentCard(
                             agent = agent,
@@ -268,7 +266,7 @@ private fun AgentsGridContent(
 }
 @Composable
 private fun AgentCard(
-    agent: AgentsModel,
+    agent: AgentUiModel,
     onClick: () -> Unit
 ) {
     Card(
@@ -286,12 +284,12 @@ private fun AgentCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = agent.displayName ?: "",
+                text = agent.agentName,
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = agent.role?.displayName ?: "",
+                text = agent.agentRole,
                 style = MaterialTheme.typography.bodySmall
             )
             Spacer(

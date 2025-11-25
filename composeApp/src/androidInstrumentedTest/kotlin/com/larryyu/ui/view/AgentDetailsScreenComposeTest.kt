@@ -14,8 +14,9 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.larryyu.domain.model.AbilitiesItemDetails
-import com.larryyu.domain.model.AgentDetailsData
+import com.larryyu.presentation.model.AbilityUiModel
+import com.larryyu.presentation.model.AgentDetailsUiModel
+import com.larryyu.presentation.model.AgentRoleDetailsUi
 import com.larryyu.ui.theme.AppTheme
 import org.junit.Rule
 import org.junit.Test
@@ -123,7 +124,7 @@ class AgentDetailsScreenComposeTest {
             AppTheme {
                 AgentDetailsContentWithClickHandler(
                     agent = agent,
-                    onAbilityClick = { ability -> clickedAbility = ability.displayName }
+                    onAbilityClick = { ability -> clickedAbility = ability.abilityName }
                 )
             }
         }
@@ -216,7 +217,7 @@ class AgentDetailsScreenComposeTest {
             AppTheme {
                 AgentDetailsContentWithClickHandler(
                     agent = agent,
-                    onAbilityClick = { ability -> clickedAbilities.add(ability.displayName ?: "") }
+                    onAbilityClick = { ability -> clickedAbilities.add(ability.abilityName) }
                 )
             }
         }
@@ -232,45 +233,28 @@ class AgentDetailsScreenComposeTest {
         uuid: String,
         displayName: String,
         description: String = "Test description",
-        abilities: List<AbilitiesItemDetails>? = null
-    ) = AgentDetailsData(
-        uuid = uuid,
-        displayName = displayName,
-        description = description,
-        developerName = "dev-name",
-        characterTags = null,
-        displayIcon = "https://example.com/icon.png",
-        displayIconSmall = "icon-small.png",
-        bustPortrait = "bust.png",
-        fullPortrait = "https://example.com/portrait.png",
-        fullPortraitV2 = "portrait-v2.png",
-        killfeedPortrait = "killfeed.png",
-        background = "https://example.com/background.png",
-        backgroundGradientColors = emptyList(),
-        assetPath = "path",
-        isFullPortraitRightFacing = true,
-        isPlayableCharacter = true,
-        isAvailableForTest = true,
-        isBaseContent = true,
-        role = null,
-        recruitmentData = null,
-        abilities = abilities,
-        voiceLine = null
+        abilities: List<AbilityUiModel>? = null
+    ) = AgentDetailsUiModel(
+        agentId = uuid,
+        agentName = displayName,
+        agentDescription = description,
+        agentRole = AgentRoleDetailsUi("Duelist", "https://example.com/role-icon.png"),
+        agentImageUrl = "https://example.com/portrait.png",
+        agentAbilities = abilities ?: emptyList()
     )
     private fun createMockAbility(
         @Suppress("UNUSED_PARAMETER") uuid: String,
         displayName: String,
         slot: String,
         description: String = "Test ability description"
-    ) = AbilitiesItemDetails(
-        slot = slot,
-        displayName = displayName,
-        description = description,
-        displayIcon = "https://example.com/ability-icon.png"
+    ) = AbilityUiModel(
+        abilityName = displayName,
+        abilityDescription = description,
+        abilityIconUrl = "https://example.com/ability-icon.png"
     )
 }
 @Composable
-private fun AgentDetailsContent(agent: AgentDetailsData) {
+private fun AgentDetailsContent(agent: AgentDetailsUiModel) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -278,21 +262,21 @@ private fun AgentDetailsContent(agent: AgentDetailsData) {
     ) {
         item {
             Text(
-                text = agent.displayName ?: "",
+                text = agent.agentName,
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(16.dp)
             )
         }
         item {
             Text(
-                text = agent.description ?: "",
+                text = agent.agentDescription,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
         item {
             Text(
-                text = "Role: Duelist",
+                text = "Role: ${agent.agentRole.roleName}",
                 modifier = Modifier.padding(16.dp)
             )
             Spacer(
@@ -305,10 +289,10 @@ private fun AgentDetailsContent(agent: AgentDetailsData) {
             Spacer(
                 modifier = Modifier
                     .size(200.dp)
-                    .semantics { contentDescription = "${agent.displayName} portrait" }
+                    .semantics { contentDescription = "${agent.agentName} portrait" }
             )
         }
-        agent.abilities?.forEach { ability ->
+        agent.agentAbilities.forEach { ability ->
             item {
                 Card(
                     modifier = Modifier
@@ -319,11 +303,11 @@ private fun AgentDetailsContent(agent: AgentDetailsData) {
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = ability.displayName ?: "",
+                            text = ability.abilityName,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            text = "Slot: ${ability.slot ?: ""}",
+                            text = ability.abilityDescription,
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -334,19 +318,19 @@ private fun AgentDetailsContent(agent: AgentDetailsData) {
 }
 @Composable
 private fun AgentDetailsContentWithClickHandler(
-    agent: AgentDetailsData,
-    onAbilityClick: (AbilitiesItemDetails) -> Unit
+    agent: AgentDetailsUiModel,
+    onAbilityClick: (AbilityUiModel) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
         item {
             Text(
-                text = agent.displayName ?: "",
+                text = agent.agentName,
                 modifier = Modifier.padding(16.dp)
             )
         }
-        agent.abilities?.forEach { ability ->
+        agent.agentAbilities.forEach { ability ->
             item {
                 Card(
                     modifier = Modifier
@@ -355,7 +339,7 @@ private fun AgentDetailsContentWithClickHandler(
                         .clickable { onAbilityClick(ability) }
                 ) {
                     Text(
-                        text = ability.displayName ?: "",
+                        text = ability.abilityName,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
@@ -365,7 +349,7 @@ private fun AgentDetailsContentWithClickHandler(
 }
 @Composable
 private fun AgentDetailsContentWithBackButton(
-    agent: AgentDetailsData,
+    agent: AgentDetailsUiModel,
     onBackClick: () -> Unit
 ) {
     Column(
@@ -383,7 +367,7 @@ private fun AgentDetailsContentWithBackButton(
             )
         }
         Text(
-            text = agent.displayName ?: "",
+            text = agent.agentName,
             modifier = Modifier.padding(16.dp)
         )
     }
