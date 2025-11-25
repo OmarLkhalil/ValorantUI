@@ -119,6 +119,7 @@ fun GunDetailsScreen(
         }
     }
 }
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun GunDetailsContent(
@@ -142,7 +143,8 @@ private fun GunDetailsContent(
         modifier = Modifier
             .fillMaxSize()
             .semantics {
-                contentDescription = "${gun.weaponName} details screen, scroll to view all information"
+                contentDescription =
+                    "${gun.weaponName} details screen, scroll to view all information"
             },
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -160,15 +162,15 @@ private fun GunDetailsContent(
             item {
                 SectionTitle(text = "Available Skins")
             }
-        item {
-            SkinsRow(
-                chromas = allChromas,
-                dominantColor = dominantColor,
-                onSkinClick = { chromaImageUrl ->
-                    selectedImageUrl = chromaImageUrl
-                }
-            )
-        }
+            item {
+                SkinsRow(
+                    chromas = allChromas,
+                    dominantColor = dominantColor,
+                    onSkinClick = { chromaImageUrl ->
+                        selectedImageUrl = chromaImageUrl
+                    }
+                )
+            }
         }
         item {
             Spacer(modifier = Modifier.height(8.dp))

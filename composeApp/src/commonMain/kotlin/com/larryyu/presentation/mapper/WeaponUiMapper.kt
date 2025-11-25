@@ -8,6 +8,7 @@ import com.larryyu.presentation.model.ChromaUiModel
 import com.larryyu.presentation.model.LevelUiModel
 import com.larryyu.presentation.model.WeaponSkinUiModel
 import com.larryyu.presentation.model.WeaponUiModel
+import kotlinx.serialization.json.JsonPrimitive
 
 fun GunsData.toUiModel(): WeaponUiModel {
     return WeaponUiModel(
@@ -33,7 +34,7 @@ fun ChromasItem.toUiModel(): ChromaUiModel {
         chromaId = uuid ?: "",
         chromaName = displayName ?: "Unknown Chroma",
         chromaImageUrl = when (val icon = displayIcon) {
-            is kotlinx.serialization.json.JsonPrimitive -> icon.content
+            is JsonPrimitive -> icon.content
             else -> null
         },
         chromaFullRender = fullRender

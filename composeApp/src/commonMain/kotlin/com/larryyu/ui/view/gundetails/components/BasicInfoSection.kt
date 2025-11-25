@@ -1,4 +1,5 @@
 package com.larryyu.ui.view.gundetails.components
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
