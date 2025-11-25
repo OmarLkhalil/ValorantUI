@@ -50,11 +50,11 @@ fun BasicInfoSection(
                 value = weaponName,
                 icon = "📌"
             )
-            InfoRow(
-                label = "Icon URL",
-                value = if (weaponIconUrl.length > 30) weaponIconUrl.take(30) + "..." else weaponIconUrl,
-                icon = "🖼️"
-            )
+//            InfoRow(
+//                label = "Icon URL",
+//                value = if (weaponIconUrl.length > 30) weaponIconUrl.take(30) + "..." else weaponIconUrl,
+//                icon = "🖼️"
+//            )
         }
     }
 }
