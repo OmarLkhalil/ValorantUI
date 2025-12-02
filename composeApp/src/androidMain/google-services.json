@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "270303734814",
+    "project_id": "valorantui",
+    "storage_bucket": "valorantui.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270303734814:android:50327935a131a4465e120f",
+        "android_client_info": {
+          "package_name": "com.larryyu.shared"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGvTsZHxBuPfov5L2b_E_DXrN0Q6iGlXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270303734814:android:440261ecf32557075e120f",
+        "android_client_info": {
+          "package_name": "com.larryyu.valorantui"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGvTsZHxBuPfov5L2b_E_DXrN0Q6iGlXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -28,7 +28,6 @@ actual fun createDataStore(): DataStore<Preferences> {
     )
 }
 
-// Helper function to create DataStore with custom path
 private fun createDataStoreWithPath(
     producePath: () -> String
 ): DataStore<Preferences> {

@@ -125,6 +125,14 @@ kotlin {
             implementation(libs.lottie.compose)
             implementation(libs.accompanist.pager)
             implementation(libs.sdp.compose)
+
+            // Firebase BOM must be added before any Firebase libs in this module
+            implementation(project.dependencies.platform(libs.firebaseBom))
+
+            //Firebase Crashlytics & Analytics
+            implementation(libs.firebaseCrashlyticsKtx)
+            implementation(libs.firebaseAnalytics)
+
         }
 
         // Android Testing dependencies
@@ -142,9 +150,6 @@ kotlin {
             implementation(libs.ktor.darwin)
             // use native driver for iOS
             implementation(libs.sqldelight.native.driver)
-
-            // Firebase Crashlytics for iOS (via CocoaPods)
-            // Note: Firebase Crashlytics will be added via Podfile
         }
 
         // Desktop-only dependencies

@@ -4,8 +4,11 @@ import com.larryyu.domain.usecase.GetAllBundlesUseCase
 import com.larryyu.domain.usecase.GetAllGunsUseCase
 import com.larryyu.presentation.mapper.toBundleUiModels
 import com.larryyu.presentation.mapper.toUiModels
+import com.larryyu.presentation.model.BundleUiModel
+import com.larryyu.presentation.model.WeaponUiModel
 import com.larryyu.presentation.uistates.GunsIntent
 import com.larryyu.presentation.uistates.GunsState
+import com.larryyu.utils.CrashlyticsLogger
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
@@ -29,7 +32,7 @@ class GunsViewModel(
         setState { copy(isLoading = true, error = null) }
         try {
             val weaponsDeferred = async {
-                var weapons = emptyList<com.larryyu.presentation.model.WeaponUiModel>()
+                var weapons = emptyList<WeaponUiModel>()
                 collectDataState(getAllGunsUseCase()) { response ->
                     val domainWeapons = response.data ?: emptyList()
                     weapons = domainWeapons.toUiModels()
@@ -38,7 +41,7 @@ class GunsViewModel(
             }
 
             val bundlesDeferred = async {
-                var bundles = emptyList<com.larryyu.presentation.model.BundleUiModel>()
+                var bundles = emptyList<BundleUiModel>()
                 collectDataState(getAllBundlesUseCase()) { response ->
                     val domainBundles = response.data ?: emptyList()
                     bundles = domainBundles.toBundleUiModels()
@@ -60,6 +63,8 @@ class GunsViewModel(
     }
     override fun onError(e: Throwable) {
         super.onError(e)
+        CrashlyticsLogger.log("GunsViewModel: onError - ${e.message}")
+        CrashlyticsLogger.recordException(e)
         setState { copy(isLoading = false, error = e.message) }
     }
     override fun onIdle() {

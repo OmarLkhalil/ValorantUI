@@ -212,8 +212,8 @@ androidx-compose-material-icons-extended-android = { group = "androidx.compose.m
 
 # Firebase BOM & Services
 firebaseBom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase_bom" }
-firebaseAnalytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
-firebaseCrashlyticsKtx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebaseAnalytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebaseCrashlyticsKtx = { group = "com.google.firebase", name = "firebase-crashlytics" }
 firebasePerfKtx = { group = "com.google.firebase", name = "firebase-perf-ktx" }
 firebaseMessaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
 firebaseConfig = { group = "com.google.firebase", name = "firebase-config-ktx" }

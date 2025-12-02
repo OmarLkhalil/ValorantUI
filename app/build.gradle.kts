@@ -4,11 +4,10 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
 
-    // Firebase Plugins - للـ CI/CD
+    // Firebase Plugins
     alias(libs.plugins.googleServices)
-    // alias(libs.plugins.firebaseCrashlytics)  // Optional - enable when needed
+    alias(libs.plugins.firebaseCrashlytics)
     alias(libs.plugins.firebaseAppdistribution)
-    // alias(libs.plugins.firebasePerf)  // Optional - enable when needed
 }
 
 android {
@@ -60,7 +59,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.ui)
@@ -68,38 +66,29 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.compose.material)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.browser)
-    implementation(libs.androidx.palette.ktx)
-
 
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.compose.runtime.livedata)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // testing deps
+    // Testing deps
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
 
-    //Koin
+    // Koin
     implementation(libs.koin.core)
     implementation(libs.koin.compose)
     implementation(libs.koin.android)
 
-    // Firebase - للـ CI/CD و App Distribution
-    // BOM سيتم تفعيله بعد setup Firebase بشكل كامل
-    // implementation(platform(libs.firebaseBom))
-    // implementation(libs.firebaseAnalytics)
-    // implementation(libs.firebaseCrashlyticsKtx)
-    // implementation(libs.firebasePerfKtx)
+    // Firebase
+    implementation(platform(libs.firebaseBom))
+    implementation(libs.firebaseCrashlyticsKtx)
+    implementation(libs.firebaseAnalytics)
 
     implementation(project(":composeApp"))
-
 }

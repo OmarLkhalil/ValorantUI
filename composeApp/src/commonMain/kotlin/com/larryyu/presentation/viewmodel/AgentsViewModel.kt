@@ -5,6 +5,7 @@ import com.larryyu.domain.utils.DataState
 import com.larryyu.presentation.mapper.toUiModels
 import com.larryyu.presentation.uistates.AgentsIntent
 import com.larryyu.presentation.uistates.AgentsUIState
+import com.larryyu.utils.CrashlyticsLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -54,11 +55,16 @@ class AgentsViewModel(
 //        }
 //    }
     private fun loadAgents() = launchAgentsViewModelScope {
+        CrashlyticsLogger.log("AgentsViewModel: Starting to load agents")
+
         agentsRepo.getAgents().collect { result ->
             when (result) {
                 is DataState.Success -> {
                     val domainAgents = result.data.data ?: emptyList()
                     val uiAgents = domainAgents.toUiModels()
+
+                    CrashlyticsLogger.log("AgentsViewModel: Successfully loaded ${uiAgents.size} agents")
+                    CrashlyticsLogger.setCustomKey("agents_count", uiAgents.size)
 
                     updateAgentsUiState(
                         _agentsState.value.copy(
@@ -69,9 +75,13 @@ class AgentsViewModel(
                     )
                 }
                 is DataState.Loading -> {
+                    CrashlyticsLogger.log("AgentsViewModel: Loading agents...")
                     updateAgentsUiState(_agentsState.value.copy(isLoading = true))
                 }
                 is DataState.Error -> {
+                    CrashlyticsLogger.log("AgentsViewModel: Error loading agents - ${result.exception.message}")
+                    CrashlyticsLogger.recordException(result.exception)
+
                     updateAgentsUiState(
                         _agentsState.value.copy(
                             isLoading = false,
@@ -90,6 +100,9 @@ class AgentsViewModel(
             try {
                 block()
             } catch (throwable: Throwable) {
+                CrashlyticsLogger.log("AgentsViewModel: Unexpected error - ${throwable.message}")
+                CrashlyticsLogger.recordException(throwable)
+
                 updateAgentsUiState(
                     AgentsUIState().copy(
                         isLoading = false,
